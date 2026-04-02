@@ -1,4 +1,4 @@
-# AGENTS.md - WebImageViewer (Web Crawler Android App)
+﻿# AGENTS.md - WebImageViewer (Web Crawler Android App)
 
 ## Project Overview
 Android app for crawling web pages, extracting images/links, downloading ZIP archives, and browsing media content. Built with Kotlin, targeting API 26-35.
