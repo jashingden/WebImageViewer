@@ -26,12 +26,12 @@
 
 **Purpose**: Project initialization, build configuration, and resource scaffolding
 
-- [ ] T001 Create Android project structure per plan.md (app/src/main, app/src/test, app/src/androidTest)
-- [ ] T002 Configure build.gradle.kts with all dependencies (OkHttp 4.12.0, Jsoup 1.18.1, Coil 2.7.0, Media3 ExoPlayer 1.4.1, Room 2.6.1, Hilt 2.51.1, WorkManager 2.9.1, Navigation 2.8.3, ViewPager2 1.1.0, DataStore 1.1.1, Kotlin Coroutines 1.8.1)
-- [ ] T003 [P] Configure AndroidManifest.xml with INTERNET permission, disable default WorkManager initializer, register WebCrawlerApp application class
-- [ ] T004 [P] Create resource files: res/values/strings.xml (Traditional Chinese), res/values/colors.xml, res/values/themes.xml with Material Components theme
-- [ ] T005 [P] Create placeholder drawable resources (ic_placeholder, ic_error) for Coil loading states
-- [ ] T006 Create WebCrawlerApp.kt as Application class with @HiltAndroidApp and Configuration.Provider for HiltWorkerFactory
+- [X] T001 Create Android project structure per plan.md (app/src/main, app/src/test, app/src/androidTest)
+- [X] T002 Configure build.gradle.kts with all dependencies (OkHttp 4.12.0, Jsoup 1.18.1, Coil 2.7.0, Media3 ExoPlayer 1.4.1, Room 2.6.1, Hilt 2.51.1, WorkManager 2.9.1, Navigation 2.8.3, ViewPager2 1.1.0, DataStore 1.1.1, Kotlin Coroutines 1.8.1)
+- [X] T003 [P] Configure AndroidManifest.xml with INTERNET permission, disable default WorkManager initializer, register WebCrawlerApp application class
+- [X] T004 [P] Create resource files: res/values/strings.xml (Traditional Chinese), res/values/colors.xml, res/values/themes.xml with Material Components theme
+- [X] T005 [P] Create placeholder drawable resources (ic_placeholder, ic_error) for Coil loading states
+- [X] T006 Create WebCrawlerApp.kt as Application class with @HiltAndroidApp and Configuration.Provider for HiltWorkerFactory
 
 ---
 
@@ -41,14 +41,14 @@
 
 **⚠️ CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T007 [P] Create Room entities: LinkIndex.kt and LinkEntry.kt with @Entity annotations, field definitions, and foreign key relationship per data-model.md
-- [ ] T008 [P] Create data models: ContentItem.kt (sealed class with ImageItem, LinkItem, DownloadItem) and ZipMediaItem.kt with MediaType enum
-- [ ] T009 Create Room DAOs: LinkIndexDao.kt and LinkEntryDao.kt with all Flow-based and suspend queries per data-model.md
-- [ ] T010 Create AppDatabase.kt with @Database annotation, TypeConverters, and DAO abstract methods
-- [ ] T011 Create Hilt AppModule.kt with @Singleton providers for OkHttpClient (with User-Agent interceptor, timeouts), Jsoup, AppDatabase, and DataStore
-- [ ] T012 Create CrawlerRepository.kt with Result<T>-based API wrapping WebCrawler and Room operations
-- [ ] T013 Create navigation graph: res/navigation/nav_graph.xml with destinations for MainFragment, BrowseFragment, ZipViewerFragment
-- [ ] T014 Create MainActivity.kt with NavHostFragment and @AndroidEntryPoint
+- [X] T007 [P] Create Room entities: LinkIndex.kt and LinkEntry.kt with @Entity annotations, field definitions, and foreign key relationship per data-model.md
+- [X] T008 [P] Create data models: ContentItem.kt (sealed class with ImageItem, LinkItem, DownloadItem) and ZipMediaItem.kt with MediaType enum
+- [X] T009 Create Room DAOs: LinkIndexDao.kt and LinkEntryDao.kt with all Flow-based and suspend queries per data-model.md
+- [X] T010 Create AppDatabase.kt with @Database annotation, TypeConverters, and DAO abstract methods
+- [X] T011 Create Hilt AppModule.kt with @Singleton providers for OkHttpClient (with User-Agent interceptor, timeouts), Jsoup, AppDatabase, and DataStore
+- [X] T012 Create CrawlerRepository.kt with Result<T>-based API wrapping WebCrawler and Room operations
+- [X] T013 Create navigation graph: res/navigation/nav_graph.xml with destinations for MainFragment, BrowseFragment, ZipViewerFragment
+- [X] T014 Create MainActivity.kt with NavHostFragment and @AndroidEntryPoint
 
 **Checkpoint**: Foundation ready — user story implementation can now begin
 
@@ -62,19 +62,16 @@
 
 ### Tests for User Story 1
 
-- [ ] T015 [P] [US1] Unit test for WebCrawler in app/src/test/java/com/example/webcrawler/data/crawler/WebCrawlerTest.kt (given{情境}_when{操作}_then{預期結果} naming, test valid URL, invalid URL, empty page, pattern filtering)
-- [ ] T016 [P] [US1] Unit test for CrawlerRepository in app/src/test/java/com/example/webcrawler/data/repository/CrawlerRepositoryTest.kt (test Result<T> success/error paths, mock WebCrawler and DAO)
-- [ ] T017 [P] [US1] Unit test for MainViewModel in app/src/test/java/com/example/webcrawler/ui/viewmodel/MainViewModelTest.kt (test CrawlState transitions: Idle → Loading → Success/Error)
+- [X] T015 [P] [US1] Unit test for WebCrawler in app/src/test/java/com/example/webcrawler/data/crawler/WebCrawlerTest.kt (given{情境}_when{操作}_then{預期結果} naming, test valid URL, invalid URL, empty page, pattern filtering)
+- [X] T016 [P] [US1] Unit test for CrawlerRepository in app/src/test/java/com/example/webcrawler/data/repository/CrawlerRepositoryTest.kt (test Result<T> success/error paths, mock WebCrawler and DAO)
+- [X] T017 [P] [US1] Unit test for MainViewModel in app/src/test/java/com/example/webcrawler/ui/viewmodel/MainViewModelTest.kt (test CrawlState transitions: Idle → Loading → Success/Error)
 - [ ] T018 [P] [US1] Instrumented test for LinkIndexDao in app/src/androidTest/java/com/example/webcrawler/data/db/LinkIndexDaoTest.kt (test insert, query, getAllIndices Flow emission)
 - [ ] T019 [US1] Instrumented test for MainFragment in app/src/androidTest/java/com/example/webcrawler/ui/fragment/MainFragmentTest.kt (test URL input, crawl trigger, loading state, success/error display)
-
-### Implementation for User Story 1
-
-- [ ] T020 [P] [US1] Create WebCrawler.kt in app/src/main/java/com/example/webcrawler/data/crawler/ with OkHttp GET, Jsoup HTML parsing, link extraction (attr("abs:href"), attr("abs:src")), regex pattern filtering, all on Dispatchers.IO
-- [ ] T021 [P] [US1] Create layout: res/layout/fragment_main.xml with URL TextInputEditText, filter pattern TextInputEditText, Crawl MaterialButton, loading ProgressBar, error TextView with retry button
-- [ ] T022 [P] [US1] Create MainViewModel.kt in app/src/main/java/com/example/webcrawler/ui/viewmodel/ with @HiltViewModel, StateFlow<CrawlState> (Idle/Loading/Success/Error), crawl(url, pattern) function calling CrawlerRepository
-- [ ] T023 [P] [US1] Create MainFragment.kt in app/src/main/java/com/example/webcrawler/ui/fragment/ with @AndroidEntryPoint, nullable binding pattern, lifecycleScope + repeatOnLifecycle collecting MainViewModel state, URL validation, crawl trigger
-- [ ] T024 [US1] Implement CrawlerRepository.crawl(url, pattern) in app/src/main/java/com/example/webcrawler/data/repository/CrawlerRepository.kt — call WebCrawler, create LinkIndex + LinkEntry list, insert into Room, return Result<CrawlResult>
+- [X] T020 [P] [US1] Create WebCrawler.kt in app/src/main/java/com/example/webcrawler/data/crawler/ with OkHttp GET, Jsoup HTML parsing, link extraction (attr("abs:href"), attr("abs:src")), regex pattern filtering, all on Dispatchers.IO
+- [X] T021 [P] [US1] Create layout: res/layout/fragment_main.xml with URL TextInputEditText, filter pattern TextInputEditText, Crawl MaterialButton, loading ProgressBar, error TextView with retry button
+- [X] T022 [P] [US1] Create MainViewModel.kt in app/src/main/java/com/example/webcrawler/ui/viewmodel/ with @HiltViewModel, StateFlow<CrawlState> (Idle/Loading/Success/Error), crawl(url, pattern) function calling CrawlerRepository
+- [X] T023 [P] [US1] Create MainFragment.kt in app/src/main/java/com/example/webcrawler/ui/fragment/ with @AndroidEntryPoint, nullable binding pattern, lifecycleScope + repeatOnLifecycle collecting MainViewModel state, URL validation, crawl trigger
+- [X] T024 [US1] Implement CrawlerRepository.crawl(url, pattern) in app/src/main/java/com/example/webcrawler/data/repository/CrawlerRepository.kt — call WebCrawler, create LinkIndex + LinkEntry list, insert into Room, return Result<CrawlResult>
 - [ ] T025 [US1] Add DataStore preference management for filter pattern (read/write default pattern) in app/src/main/java/com/example/webcrawler/data/
 
 **Checkpoint**: User Story 1 is fully functional — user can crawl a page and generate a persisted link index
@@ -89,19 +86,16 @@
 
 ### Tests for User Story 2
 
-- [ ] T026 [P] [US2] Unit test for BrowseViewModel in app/src/test/java/com/example/webcrawler/ui/viewmodel/BrowseViewModelTest.kt (test PageState transitions, link index selection, image list emission)
+- [X] T026 [P] [US2] Unit test for BrowseViewModel in app/src/test/java/com/example/webcrawler/ui/viewmodel/BrowseViewModelTest.kt (test PageState transitions, link index selection, image list emission)
 - [ ] T027 [P] [US2] Instrumented test for BrowseFragment in app/src/androidTest/java/com/example/webcrawler/ui/fragment/BrowseFragmentTest.kt (test ViewPager2 page navigation, RecyclerView image display, scroll behavior)
-
-### Implementation for User Story 2
-
-- [ ] T028 [P] [US2] Create LinkIndexPagerAdapter.kt in app/src/main/java/com/example/webcrawler/ui/adapter/ extending FragmentStateAdapter, dynamic page count from Room Flow, offscreenPageLimit = 1
-- [ ] T029 [P] [US2] Create ContentAdapter.kt in app/src/main/java/com/example/webcrawler/ui/adapter/ as ListAdapter<ContentItem> with DiffUtil.ItemCallback, multiple view types (TYPE_IMAGE, TYPE_LINK, TYPE_DOWNLOAD), inner ViewHolder classes with bind() methods
-- [ ] T030 [P] [US2] Create layouts: res/layout/fragment_browse.xml (ViewPager2), res/layout/item_image.xml (ImageView with match_parent width, adjustViewBounds=true), res/layout/item_link.xml (link display TextView)
-- [ ] T031 [P] [US2] Create BrowseViewModel.kt in app/src/main/java/com/example/webcrawler/ui/viewmodel/ with @HiltViewModel, StateFlow<PageState>, loadLinkIndices() and selectIndex(indexId) functions, Flow-based Room queries
-- [ ] T032 [P] [US2] Create BrowseFragment.kt in app/src/main/java/com/example/webcrawler/ui/fragment/ with @AndroidEntryPoint, nullable binding pattern, ViewPager2 setup with LinkIndexPagerAdapter, shared RecyclerView.RecycledViewPool
-- [ ] T033 [US2] Create IndexPageFragment.kt in app/src/main/java/com/example/webcrawler/ui/fragment/ — individual ViewPager2 page containing vertical RecyclerView with ContentAdapter, Coil image loading with crossfade/placeholder/error
-- [ ] T034 [US2] Implement LinkEntry to ContentItem mapping in CrawlerRepository — convert crawled LinkEntry list to ContentItem sealed class instances for RecyclerView display
-- [ ] T035 [US2] Add navigation from MainFragment to BrowseFragment on successful crawl via nav_graph.xml with safe args for link index ID
+- [X] T028 [P] [US2] Create LinkIndexPagerAdapter.kt in app/src/main/java/com/example/webcrawler/ui/adapter/ extending FragmentStateAdapter, dynamic page count from Room Flow, offscreenPageLimit = 1
+- [X] T029 [P] [US2] Create ContentAdapter.kt in app/src/main/java/com/example/webcrawler/ui/adapter/ as ListAdapter<ContentItem> with DiffUtil.ItemCallback, multiple view types (TYPE_IMAGE, TYPE_LINK, TYPE_DOWNLOAD), inner ViewHolder classes with bind() methods
+- [X] T030 [P] [US2] Create layouts: res/layout/fragment_browse.xml (ViewPager2), res/layout/item_image.xml (ImageView with match_parent width, adjustViewBounds=true), res/layout/item_link.xml (link display TextView)
+- [X] T031 [P] [US2] Create BrowseViewModel.kt in app/src/main/java/com/example/webcrawler/ui/viewmodel/ with @HiltViewModel, StateFlow<PageState>, loadLinkIndices() and selectIndex(indexId) functions, Flow-based Room queries
+- [X] T032 [P] [US2] Create BrowseFragment.kt in app/src/main/java/com/example/webcrawler/ui/fragment/ with @AndroidEntryPoint, nullable binding pattern, ViewPager2 setup with LinkIndexPagerAdapter, shared RecyclerView.RecycledViewPool
+- [X] T033 [US2] Create IndexPageFragment.kt in app/src/main/java/com/example/webcrawler/ui/fragment/ — individual ViewPager2 page containing vertical RecyclerView with ContentAdapter, Coil image loading with crossfade/placeholder/error
+- [X] T034 [US2] Implement LinkEntry to ContentItem mapping in CrawlerRepository — convert crawled LinkEntry list to ContentItem sealed class instances for RecyclerView display
+- [X] T035 [US2] Add navigation from MainFragment to BrowseFragment on successful crawl via nav_graph.xml with safe args for link index ID
 
 **Checkpoint**: User Stories 1 AND 2 both work independently — full crawl → browse images flow complete
 
@@ -115,16 +109,13 @@
 
 ### Tests for User Story 3
 
-- [ ] T036 [P] [US3] Unit test for DownloadWorker in app/src/test/java/com/example/webcrawler/data/download/DownloadWorkerTest.kt (test download success, zip-slip prevention, extraction failure, cleanup on error)
-- [ ] T037 [US3] Unit test for zip-slip prevention logic — test malicious ZIP entries with ../ paths are rejected
-
-### Implementation for User Story 3
-
-- [ ] T038 [P] [US3] Create DownloadWorker.kt in app/src/main/java/com/example/webcrawler/data/download/ as @HiltWorker CoroutineWorker — download ZIP via OkHttp, extract with ZipInputStream, zip-slip validation (canonicalPath check), update LinkEntry status in Room, progress reporting via setProgress()
-- [ ] T039 [P] [US3] Update ContentAdapter.kt — add DownloadItem view type with "Download ZIP" / "View ZIP" button states, download progress indicator, retry button on failure
-- [ ] T040 [P] [US3] Create layout: res/layout/item_zip_download.xml with download link info, status TextView, action button (Download ZIP / View ZIP / Retry)
-- [ ] T041 [US3] Update BrowseViewModel.kt — add startDownload(entryId, linkIndexId) function to enqueue WorkManager OneTimeWorkRequest, observe WorkInfo Flow for progress/status updates
-- [ ] T042 [US3] Update IndexPageFragment.kt — wire up Download ZIP button click to BrowseViewModel.startDownload(), observe download status changes, update button state, handle error messages
+- [X] T036 [P] [US3] Unit test for DownloadWorker in app/src/test/java/com/example/webcrawler/data/download/DownloadWorkerTest.kt (test download success, zip-slip prevention, extraction failure, cleanup on error)
+- [X] T037 [US3] Unit test for zip-slip prevention logic — test malicious ZIP entries with ../ paths are rejected
+- [X] T038 [P] [US3] Create DownloadWorker.kt in app/src/main/java/com/example/webcrawler/data/download/ as @HiltWorker CoroutineWorker — download ZIP via OkHttp, extract with ZipInputStream, zip-slip validation (canonicalPath check), update LinkEntry status in Room, progress reporting via setProgress()
+- [X] T039 [P] [US3] Update ContentAdapter.kt — add DownloadItem view type with "Download ZIP" / "View ZIP" button states, download progress indicator, retry button on failure
+- [X] T040 [P] [US3] Create layout: res/layout/item_zip_download.xml with download link info, status TextView, action button (Download ZIP / View ZIP / Retry)
+- [X] T041 [US3] Update BrowseViewModel.kt — add startDownload(entryId, linkIndexId) function to enqueue WorkManager OneTimeWorkRequest, observe WorkInfo Flow for progress/status updates
+- [X] T042 [US3] Update IndexPageFragment.kt — wire up Download ZIP button click to BrowseViewModel.startDownload(), observe download status changes, update button state, handle error messages
 - [ ] T043 [US3] Add storage permission handling and app-private directory setup (filesDir/downloads, filesDir/extracted) in WebCrawlerApp.kt or DownloadWorker
 
 **Checkpoint**: User Stories 1, 2, AND 3 all work independently — full crawl → browse → download ZIP flow complete
@@ -139,18 +130,15 @@
 
 ### Tests for User Story 4
 
-- [ ] T044 [P] [US4] Unit test for ZipViewerViewModel in app/src/test/java/com/example/webcrawler/ui/viewmodel/ZipViewerViewModelTest.kt (test media scanning, empty directory, mixed file types)
+- [X] T044 [P] [US4] Unit test for ZipViewerViewModel in app/src/test/java/com/example/webcrawler/ui/viewmodel/ZipViewerViewModelTest.kt (test media scanning, empty directory, mixed file types)
 - [ ] T045 [US4] Instrumented test for ZipViewerFragment in app/src/androidTest/java/com/example/webcrawler/ui/fragment/ZipViewerFragmentTest.kt (test image display with Coil, video playback with ExoPlayer, empty state)
-
-### Implementation for User Story 4
-
-- [ ] T046 [P] [US4] Create ZipMediaAdapter.kt in app/src/main/java/com/example/webcrawler/ui/adapter/ as ListAdapter<ZipMediaItem> with DiffUtil, multiple view types (TYPE_IMAGE, TYPE_VIDEO), Coil for images, PlayerView for videos
-- [ ] T047 [P] [US4] Create layout: res/layout/fragment_zip_viewer.xml (RecyclerView + empty state TextView), res/layout/item_zip_media.xml (shared media item layout with ImageView and PlayerView)
-- [ ] T048 [P] [US4] Create ZipViewerViewModel.kt in app/src/main/java/com/example/webcrawler/ui/viewmodel/ with @HiltViewModel, StateFlow<ZipViewerState> (Idle/Loading/Success/Error), scanMedia(localPath) function to walk directory and discover image/video files
-- [ ] T049 [P] [US4] Create ZipViewerFragment.kt in app/src/main/java/com/example/webcrawler/ui/fragment/ with @AndroidEntryPoint, nullable binding pattern, RecyclerView with ZipMediaAdapter, ExoPlayer lifecycle management (init in onViewCreated, release in onDestroyView), safe args for extraction path
-- [ ] T050 [US4] Update nav_graph.xml — add ZipViewerFragment destination with safe arg for localPath, add navigation action from BrowseFragment/IndexPageFragment
-- [ ] T051 [US4] Wire "View ZIP" button click to navigate to ZipViewerFragment with extraction path argument
-- [ ] T052 [US4] Implement media file type detection in ZipViewerViewModel — scan directory recursively, filter by supported extensions (.jpg, .jpeg, .png, .gif, .webp, .bmp, .svg for images; .mp4, .webm, .mkv, .avi for videos), return List<ZipMediaItem>
+- [X] T046 [P] [US4] Create ZipMediaAdapter.kt in app/src/main/java/com/example/webcrawler/ui/adapter/ as ListAdapter<ZipMediaItem> with DiffUtil, multiple view types (TYPE_IMAGE, TYPE_VIDEO), Coil for images, PlayerView for videos
+- [X] T047 [P] [US4] Create layout: res/layout/fragment_zip_viewer.xml (RecyclerView + empty state TextView), res/layout/item_zip_media.xml (shared media item layout with ImageView and PlayerView)
+- [X] T048 [P] [US4] Create ZipViewerViewModel.kt in app/src/main/java/com/example/webcrawler/ui/viewmodel/ with @HiltViewModel, StateFlow<ZipViewerState> (Idle/Loading/Success/Error), scanMedia(localPath) function to walk directory and discover image/video files
+- [X] T049 [P] [US4] Create ZipViewerFragment.kt in app/src/main/java/com/example/webcrawler/ui/fragment/ with @AndroidEntryPoint, nullable binding pattern, RecyclerView with ZipMediaAdapter, ExoPlayer lifecycle management (init in onViewCreated, release in onDestroyView), safe args for extraction path
+- [X] T050 [US4] Update nav_graph.xml — add ZipViewerFragment destination with safe arg for localPath, add navigation action from BrowseFragment/IndexPageFragment
+- [X] T051 [US4] Wire "View ZIP" button click to navigate to ZipViewerFragment with extraction path argument
+- [X] T052 [US4] Implement media file type detection in ZipViewerViewModel — scan directory recursively, filter by supported extensions (.jpg, .jpeg, .png, .gif, .webp, .bmp, .svg for images; .mp4, .webm, .mkv, .avi for videos), return List<ZipMediaItem>
 
 **Checkpoint**: All user stories are independently functional — complete crawl → browse → download ZIP → view media flow
 

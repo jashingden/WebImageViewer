@@ -1,0 +1,101 @@
+*.class
+*.log
+*.jar
+*.war
+*.ear
+*.aar
+*.so
+*.apk
+*.dex
+*.ab
+*.ap_
+
+# Generated files
+*.iml
+.gradle/
+local.properties
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Built application files
+app/build/
+app/release/
+app/debug/
+
+# Crashlytics
+fabric.properties
+
+# External native build folder generated in Android Studio 2.2 and later
+.externalNativeBuild
+.cxx/
+
+# Freeline
+freeline.py
+freeline/
+freeline_project_description.json
+
+# fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+fastlane/readme.md
+
+# Version control
+vcs.xml
+
+# lint
+lint/intermediates/
+lint/generated/
+lint/outputs/
+lint/tmp/
+lint/lint-results.xml
+
+# Kotlin
+*.class
+*.jar
+*.kotlin_module
+build/
+
+# Android Studio
+captures/
+.externalNativeBuild
+.cxx
+
+# Gradle
+.gradle/
+gradle-app.setting
+!gradle-wrapper.jar
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Backup files
+*~
+*.bak
+*.swp
+*.pyc
+*.pyo
+
+# Keystore files
+*.jks
+*.keystore
+!debug.keystore
+
+# Google Services (e.g. Maps or Auth)
+google-services.json
+
+# Signing
+signing.properties
+
+# Android Profiling
+*.hprof

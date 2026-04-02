@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">WebImageViewer</string>
+    <string name="crawl">開始爬取</string>
+    <string name="enter_url">輸入網址</string>
+    <string name="filter_pattern">過濾規則</string>
+    <string name="loading">載入中…</string>
+    <string name="error_network">無法連線，請檢查網路設定後重試</string>
+    <string name="error_invalid_url">網址格式不正確</string>
+    <string name="error_empty_result">找不到符合條件的連結</string>
+    <string name="error_download">下載失敗，請稍後重試</string>
+    <string name="error_extraction">解壓縮失敗</string>
+    <string name="error_storage">儲存空間不足</string>
+    <string name="error_general">發生錯誤，請重試</string>
+    <string name="retry">重試</string>
+    <string name="download_zip">下載 ZIP</string>
+    <string name="view_zip">檢視 ZIP</string>
+    <string name="downloading">下載中…</string>
+    <string name="extracting">解壓縮中…</string>
+    <string name="download_complete">下載完成</string>
+    <string name="no_links_found">找不到任何連結</string>
+    <string name="no_images_found">找不到任何圖片</string>
+    <string name="no_media_found">找不到任何媒體檔案</string>
+    <string name="browse_indices">瀏覽索引頁面</string>
+    <string name="default_filter_pattern">.*</string>
+    <string name="permission_required">需要儲存空間權限</string>
+    <string name="permission_denied">權限被拒絕，無法下載檔案</string>
+</resources>
