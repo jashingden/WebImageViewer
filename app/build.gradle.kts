@@ -1,8 +1,10 @@
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("com.google.dagger.hilt.android")
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.google.devtools.ksp)
+    alias(libs.plugins.dagger.hilt)
+    alias(libs.plugins.navigation.safeargs)
 }
 
 android {
@@ -37,12 +39,14 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        compose = true // Add this
     }
+    // Note: With Kotlin 2.0+, you NO LONGER need composeOptions { kotlinCompilerExtensionVersion }
 }
 
 dependencies {
     // AndroidX Core
-    implementation("androidx.core:core-ktx:1.13.1")
+    implementation(libs.androidx.core.ktx)
     implementation("androidx.appcompat:appcompat:1.7.0")
     implementation("com.google.android.material:material:1.12.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
@@ -51,23 +55,24 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 
     // Network
-    implementation("com.squareup.okhttp3:okhttp:4.12.0")
-    implementation("org.jsoup:jsoup:1.18.1")
+    implementation(libs.okhttp)
+    implementation(libs.logging.interceptor) // 確保版本與 okhttp 一致
+    implementation(libs.jsoup)
 
     // Image Loading
     implementation("io.coil-kt:coil:2.7.0")
 
     // Video Playback
-    implementation("androidx.media3:media3-exoplayer:1.4.1")
-    implementation("androidx.media3:media3-ui:1.4.1")
+    implementation(libs.media3.exoplayer)
+    implementation(libs.media3.ui)
 
     // Room Database
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
     ksp("androidx.room:room-compiler:2.6.1")
 
     // Hilt DI
-    implementation("com.google.dagger:hilt-android:2.51.1")
+    implementation(libs.dagger.hilt)
     ksp("com.google.dagger:hilt-compiler:2.51.1")
 
     // WorkManager + Hilt Worker
@@ -76,14 +81,24 @@ dependencies {
     ksp("androidx.hilt:hilt-compiler:1.2.0")
 
     // Navigation
-    implementation("androidx.navigation:navigation-fragment-ktx:2.8.3")
-    implementation("androidx.navigation:navigation-ui-ktx:2.8.3")
+    implementation(libs.navigation.fragment.ktx)
+    implementation(libs.navigation.ui.ktx)
 
     // ViewPager2
     implementation("androidx.viewpager2:viewpager2:1.1.0")
 
     // DataStore
     implementation("androidx.datastore:datastore-preferences:1.1.1")
+
+    // Add these lines to satisfy the Compose Compiler
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.compose.ui)
+    implementation(libs.androidx.compose.ui.graphics)
+    implementation(libs.androidx.compose.ui.tooling.preview)
+    implementation(libs.androidx.compose.material3)
+
+    // Specifically, the Runtime is what the error message is asking for:
+    implementation("androidx.compose.runtime:runtime")
 
     // Testing
     testImplementation("junit:junit:4.13.2")

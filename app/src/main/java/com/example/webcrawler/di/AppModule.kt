@@ -49,10 +49,6 @@ object AppModule {
 
     @Provides
     @Singleton
-    fun provideJsoup(): Jsoup = Jsoup
-
-    @Provides
-    @Singleton
     fun provideDatabase(@ApplicationContext context: Context): AppDatabase {
         return Room.databaseBuilder(
             context,

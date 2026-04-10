@@ -1,6 +1,8 @@
 plugins {
-    id("com.android.application") version "8.3.2" apply false
-    id("org.jetbrains.kotlin.android") version "1.9.23" apply false
-    id("com.google.dagger.hilt.android") version "2.51.1" apply false
-    id("com.google.devtools.ksp") version "1.9.23-1.0.20" apply false
+    alias(libs.plugins.android.application) apply false
+    alias(libs.plugins.kotlin.android) apply false
+    alias(libs.plugins.kotlin.compose) apply false // Kotlin 2.0+ 必須加入這個
+    alias(libs.plugins.google.devtools.ksp) apply false
+    alias(libs.plugins.navigation.safeargs) apply false
+    alias(libs.plugins.dagger.hilt) apply false
 }
