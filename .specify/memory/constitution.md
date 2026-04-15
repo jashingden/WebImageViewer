@@ -41,7 +41,7 @@ Follow-up TODOs: None
 
 - **單元測試**：所有 ViewModel、Repository、Use Case 必須具備單元測試。測試檔名格式為 `{ClassName}Test.kt`，放置於 `src/test/java/` 目錄。使用 `gradlew test` 執行，必須全數通過。
 - **儀器測試**：涉及 Android Framework 的元件（Fragment、Room DAO、DataStore）必須編寫儀器測試，放置於 `src/androidTest/java/` 目錄。使用 `gradlew connectedAndroidTest` 執行。
-- **單一測試方法**：使用 `gradlew test --tests "com.example.webcrawler.MyTestClass.myTestMethod"` 可執行單一測試，便於開發階段快速驗證。
+- **單一測試方法**：使用 `gradlew test --tests "com.eddy.webcrawler.MyTestClass.myTestMethod"` 可執行單一測試，便於開發階段快速驗證。
 - **測試覆蓋目標**：核心業務邏輯（爬蟲解析、下載管理、資料庫操作）覆蓋率不得低於 80%。UI 適配器與 View 層以儀器測試驗證關鍵互動即可。
 - **測試命名**：測試方法名稱必須清楚描述情境與預期結果，格式為 `given{情境}_when{操作}_then{預期結果}`。例如：`givenInvalidUrl_whenCrawl_thenReturnsError()`。
 - **測試獨立性**：每個測試必須可獨立執行，不得依賴其他測試的執行順序或副作用。使用 `@Before` 設定初始狀態、`@After` 清理資源。

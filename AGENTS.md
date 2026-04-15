@@ -15,10 +15,10 @@ Android app for crawling web pages, extracting images/links, downloading ZIP arc
 ./gradlew test
 
 # Run a single test class
-./gradlew test --tests "com.example.webcrawler.MyTestClass"
+./gradlew test --tests "com.eddy.webcrawler.MyTestClass"
 
 # Run a single test method
-./gradlew test --tests "com.example.webcrawler.MyTestClass.myTestMethod"
+./gradlew test --tests "com.eddy.webcrawler.MyTestClass.myTestMethod"
 
 # Run instrumented tests on device/emulator
 ./gradlew connectedAndroidTest
@@ -49,7 +49,7 @@ Android app for crawling web pages, extracting images/links, downloading ZIP arc
 
 ### Package Structure
 ```
-com.example.webcrawler
+com.eddy.webcrawler
 ├── data/
 │   ├── crawler/      # WebCrawler (OkHttp + Jsoup)
 │   ├── db/           # Room DAO + Database

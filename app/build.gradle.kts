@@ -8,11 +8,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.webcrawler"
+    namespace = "com.eddy.webcrawler"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.example.webcrawler"
+        applicationId = "com.eddy.webcrawler"
         minSdk = 26
         targetSdk = 35
         versionCode = 1

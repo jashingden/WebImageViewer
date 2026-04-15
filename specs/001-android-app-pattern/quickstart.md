@@ -51,10 +51,10 @@ Or drag the APK onto a running emulator.
 ./gradlew test
 
 # Single test class
-./gradlew test --tests "com.example.webcrawler.data.crawler.WebCrawlerTest"
+./gradlew test --tests "com.eddy.webcrawler.data.crawler.WebCrawlerTest"
 
 # Single test method
-./gradlew test --tests "com.example.webcrawler.data.crawler.WebCrawlerTest.givenInvalidUrl_whenCrawl_thenReturnsError"
+./gradlew test --tests "com.eddy.webcrawler.data.crawler.WebCrawlerTest.givenInvalidUrl_whenCrawl_thenReturnsError"
 
 # Instrumented tests (requires device/emulator)
 ./gradlew connectedAndroidTest
