@@ -110,7 +110,7 @@ class MainFragment : Fragment() {
         binding.tvError.visibility = View.GONE
         binding.btnRetry.visibility = View.GONE
 
-        val totalEntries = result.aEntries.size + result.imgEntries.size
+        val totalEntries = result.totalEntries
         Toast.makeText(
             requireContext(),
             "爬取完成：找到 $totalEntries 個連結",

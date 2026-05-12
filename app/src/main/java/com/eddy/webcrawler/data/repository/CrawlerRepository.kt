@@ -14,9 +14,7 @@ import javax.inject.Singleton
 
 data class CrawlResult(
     val linkIndexId: Long,
-    val linkIndex: LinkIndex,
-    val aEntries: List<LinkEntry>,
-    val imgEntries: List<LinkEntry>
+    val totalEntries: Int
 )
 
 @Singleton
@@ -28,51 +26,101 @@ class CrawlerRepository @Inject constructor(
 
     suspend fun crawl(url: String, pattern: String): Result<CrawlResult> = runCatching {
         val crawlData = webCrawler.fetchAndParse(url, pattern)
-        val allEntries = crawlData.aEntries + crawlData.imgEntries
 
-        val linkIndex = LinkIndex(
-            sourceUrl = url,
-            filterPattern = pattern,
-            title = crawlData.title,
-            crawlTimestamp = System.currentTimeMillis(),
-            status = if (allEntries.isEmpty()) "EMPTY" else "SUCCESS"
-        )
+        if (crawlData.aEntries.isNotEmpty()) {
+            // 首頁邏輯：不儲存首頁本身的內容，改為爬取所有子連結的內容
+            var linkIndexId: Long = 0
+            var totalEntries = 0
+            crawlData.aEntries.forEach { entryData ->
+                runCatching {
+                    val subData = webCrawler.fetchAndParse(entryData.url, pattern)
+                    val allEntries = subData.aEntries + subData.imgEntries
 
-        val linkIndexId = linkIndexDao.insertIndex(linkIndex)
+                    val linkIndex = LinkIndex(
+                        sourceUrl = entryData.url,
+                        filterPattern = pattern,
+                        title = subData.title,
+                        crawlTimestamp = System.currentTimeMillis(),
+                        status = if (allEntries.isEmpty()) "EMPTY" else "SUCCESS"
+                    )
+                    linkIndexId = linkIndexDao.insertIndex(linkIndex)
 
-        val aEntries = crawlData.aEntries.map { entryData ->
-            LinkEntry(
+                    val subA = subData.aEntries.map { subEntry ->
+                        LinkEntry(
+                            linkIndexId = linkIndexId,
+                            displayName = subEntry.displayName,
+                            url = subEntry.url,
+                            type = subEntry.type,
+                            fileExtension = subEntry.fileExtension
+                        )
+                    }
+                    val subImg = subData.imgEntries.map { subEntry ->
+                        LinkEntry(
+                            linkIndexId = linkIndexId,
+                            displayName = subEntry.displayName,
+                            url = subEntry.url,
+                            type = subEntry.type,
+                            fileExtension = subEntry.fileExtension
+                        )
+                    }
+
+                    if (subA.isNotEmpty() || subImg.isNotEmpty()) {
+                        linkEntryDao.insertEntries(subA + subImg)
+                        totalEntries += subA.size + subImg.size
+                    }
+                }
+            }
+
+            CrawlResult(
                 linkIndexId = linkIndexId,
-                displayName = entryData.displayName,
-                url = entryData.url,
-                type = entryData.type,
-                fileExtension = entryData.fileExtension
+                totalEntries
+            )
+        } else {
+            // 原本的邏輯：不是首頁，直接儲存目前的內容
+            val allEntries = crawlData.aEntries + crawlData.imgEntries
+
+            val linkIndex = LinkIndex(
+                sourceUrl = url,
+                filterPattern = pattern,
+                title = crawlData.title,
+                crawlTimestamp = System.currentTimeMillis(),
+                status = if (allEntries.isEmpty()) "EMPTY" else "SUCCESS"
+            )
+
+            val linkIndexId = linkIndexDao.insertIndex(linkIndex)
+
+            val aEntries = crawlData.aEntries.map { entryData ->
+                LinkEntry(
+                    linkIndexId = linkIndexId,
+                    displayName = entryData.displayName,
+                    url = entryData.url,
+                    type = entryData.type,
+                    fileExtension = entryData.fileExtension
+                )
+            }
+
+            val imgEntries = crawlData.imgEntries.map { entryData ->
+                LinkEntry(
+                    linkIndexId = linkIndexId,
+                    displayName = entryData.displayName,
+                    url = entryData.url,
+                    type = entryData.type,
+                    fileExtension = entryData.fileExtension
+                )
+            }
+
+            if (aEntries.isNotEmpty() || imgEntries.isNotEmpty()) {
+                linkEntryDao.insertEntries(aEntries + imgEntries)
+            }
+
+            val savedIndex = linkIndexDao.getIndexById(linkIndexId)
+                ?: throw IllegalStateException("Failed to retrieve saved link index")
+
+            CrawlResult(
+                linkIndexId = linkIndexId,
+                allEntries.size
             )
         }
-
-        val imgEntries = crawlData.imgEntries.map { entryData ->
-            LinkEntry(
-                linkIndexId = linkIndexId,
-                displayName = entryData.displayName,
-                url = entryData.url,
-                type = entryData.type,
-                fileExtension = entryData.fileExtension
-            )
-        }
-
-        if (aEntries.isNotEmpty() || imgEntries.isNotEmpty()) {
-            linkEntryDao.insertEntries(aEntries + imgEntries)
-        }
-
-        val savedIndex = linkIndexDao.getIndexById(linkIndexId)
-            ?: throw IllegalStateException("Failed to retrieve saved link index")
-
-        CrawlResult(
-            linkIndexId = linkIndexId,
-            linkIndex = savedIndex,
-            aEntries = aEntries,
-            imgEntries = imgEntries
-        )
     }
 
     fun getAllIndices(): Flow<List<LinkIndex>> = linkIndexDao.getAllIndices()
