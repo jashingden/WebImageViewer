@@ -12,6 +12,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.eddy.webcrawler.R
+import com.eddy.webcrawler.data.repository.CrawlResult
 import com.eddy.webcrawler.databinding.FragmentMainBinding
 import com.eddy.webcrawler.ui.viewmodel.CrawlState
 import com.eddy.webcrawler.ui.viewmodel.MainViewModel
@@ -45,12 +46,30 @@ class MainFragment : Fragment() {
     private fun setupObservers() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.crawlState.collect { state ->
-                    when (state) {
-                        is CrawlState.Idle -> showIdleState()
-                        is CrawlState.Loading -> showLoadingState()
-                        is CrawlState.Success -> showSuccessState(state.content)
-                        is CrawlState.Error -> showErrorState(state.message)
+                launch {
+                    viewModel.crawlState.collect { state ->
+                        when (state) {
+                            is CrawlState.Idle -> showIdleState()
+                            is CrawlState.Loading -> showLoadingState()
+                            is CrawlState.Success -> showSuccessState(state.content)
+                            is CrawlState.Error -> showErrorState(state.message)
+                        }
+                    }
+                }
+
+                launch {
+                    viewModel.lastUrl.collect { url ->
+                        if (binding.etUrl.text.isNullOrBlank() && url.isNotBlank()) {
+                            binding.etUrl.setText(url)
+                        }
+                    }
+                }
+
+                launch {
+                    viewModel.lastPattern.collect { pattern ->
+                        if (binding.etPattern.text.isNullOrBlank()) {
+                            binding.etPattern.setText(pattern)
+                        }
                     }
                 }
             }
@@ -60,13 +79,13 @@ class MainFragment : Fragment() {
     private fun setupClickListeners() {
         binding.btnCrawl.setOnClickListener {
             val url = binding.etUrl.text?.toString()?.trim() ?: ""
-            val pattern = binding.etPattern.text?.toString()?.trim() ?: ".*"
+            val pattern = binding.etPattern.text?.toString()?.trim() ?: ""
             viewModel.crawl(url, pattern)
         }
 
         binding.btnRetry.setOnClickListener {
             val url = binding.etUrl.text?.toString()?.trim() ?: ""
-            val pattern = binding.etPattern.text?.toString()?.trim() ?: ".*"
+            val pattern = binding.etPattern.text?.toString()?.trim() ?: ""
             viewModel.crawl(url, pattern)
         }
     }
@@ -85,20 +104,22 @@ class MainFragment : Fragment() {
         binding.btnRetry.visibility = View.GONE
     }
 
-    private fun showSuccessState(result: com.eddy.webcrawler.data.repository.CrawlResult) {
+    private fun showSuccessState(result: CrawlResult) {
         binding.progressBar.visibility = View.GONE
         binding.btnCrawl.isEnabled = true
         binding.tvError.visibility = View.GONE
         binding.btnRetry.visibility = View.GONE
 
+        val totalEntries = result.aEntries.size + result.imgEntries.size
         Toast.makeText(
             requireContext(),
-            "爬取完成：找到 ${result.entries.size} 個連結",
+            "爬取完成：找到 $totalEntries 個連結",
             Toast.LENGTH_SHORT
         ).show()
 
         val action = MainFragmentDirections.actionMainFragmentToBrowseFragment(result.linkIndexId)
         findNavController().navigate(action)
+        viewModel.resetCrawlState()
     }
 
     private fun showErrorState(message: String) {

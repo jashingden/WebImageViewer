@@ -15,7 +15,8 @@ import javax.inject.Singleton
 data class CrawlResult(
     val linkIndexId: Long,
     val linkIndex: LinkIndex,
-    val entries: List<LinkEntry>
+    val aEntries: List<LinkEntry>,
+    val imgEntries: List<LinkEntry>
 )
 
 @Singleton
@@ -27,18 +28,19 @@ class CrawlerRepository @Inject constructor(
 
     suspend fun crawl(url: String, pattern: String): Result<CrawlResult> = runCatching {
         val crawlData = webCrawler.fetchAndParse(url, pattern)
+        val allEntries = crawlData.aEntries + crawlData.imgEntries
 
         val linkIndex = LinkIndex(
             sourceUrl = url,
             filterPattern = pattern,
             title = crawlData.title,
             crawlTimestamp = System.currentTimeMillis(),
-            status = if (crawlData.entries.isEmpty()) "EMPTY" else "SUCCESS"
+            status = if (allEntries.isEmpty()) "EMPTY" else "SUCCESS"
         )
 
         val linkIndexId = linkIndexDao.insertIndex(linkIndex)
 
-        val entries = crawlData.entries.map { entryData ->
+        val aEntries = crawlData.aEntries.map { entryData ->
             LinkEntry(
                 linkIndexId = linkIndexId,
                 displayName = entryData.displayName,
@@ -48,8 +50,18 @@ class CrawlerRepository @Inject constructor(
             )
         }
 
-        if (entries.isNotEmpty()) {
-            linkEntryDao.insertEntries(entries)
+        val imgEntries = crawlData.imgEntries.map { entryData ->
+            LinkEntry(
+                linkIndexId = linkIndexId,
+                displayName = entryData.displayName,
+                url = entryData.url,
+                type = entryData.type,
+                fileExtension = entryData.fileExtension
+            )
+        }
+
+        if (aEntries.isNotEmpty() || imgEntries.isNotEmpty()) {
+            linkEntryDao.insertEntries(aEntries + imgEntries)
         }
 
         val savedIndex = linkIndexDao.getIndexById(linkIndexId)
@@ -58,7 +70,8 @@ class CrawlerRepository @Inject constructor(
         CrawlResult(
             linkIndexId = linkIndexId,
             linkIndex = savedIndex,
-            entries = entries
+            aEntries = aEntries,
+            imgEntries = imgEntries
         )
     }
 

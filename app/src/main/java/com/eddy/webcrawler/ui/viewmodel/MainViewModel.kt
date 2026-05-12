@@ -4,10 +4,13 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.eddy.webcrawler.data.repository.CrawlResult
 import com.eddy.webcrawler.data.repository.CrawlerRepository
+import com.eddy.webcrawler.data.repository.SettingsRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -20,11 +23,28 @@ sealed class CrawlState {
 
 @HiltViewModel
 class MainViewModel @Inject constructor(
-    private val repository: CrawlerRepository
+    private val repository: CrawlerRepository,
+    private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
     private val _crawlState = MutableStateFlow<CrawlState>(CrawlState.Idle)
     val crawlState: StateFlow<CrawlState> = _crawlState.asStateFlow()
+
+    val lastUrl: StateFlow<String> = settingsRepository.lastUrl.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = ""
+    )
+
+    val lastPattern: StateFlow<String> = settingsRepository.lastPattern.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = ""
+    )
+
+    fun resetCrawlState() {
+        _crawlState.value = CrawlState.Idle
+    }
 
     fun crawl(url: String, pattern: String) {
         if (url.isBlank()) {
@@ -38,6 +58,7 @@ class MainViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
+            settingsRepository.saveLastCrawlSettings(url, pattern)
             _crawlState.value = CrawlState.Loading
             repository.crawl(url, pattern)
                 .fold(
