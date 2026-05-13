@@ -18,7 +18,10 @@ interface LinkIndexDao {
     @Query("SELECT * FROM linkindex WHERE id = :id")
     suspend fun getIndexById(id: Long): LinkIndex?
 
-    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    @Query("SELECT * FROM linkindex WHERE sourceUrl = :url")
+    suspend fun getIndexByUrl(url: String): LinkIndex?
+
+    @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertIndex(index: LinkIndex): Long
 
     @Update

@@ -7,7 +7,9 @@ import androidx.room.PrimaryKey
 
 @Entity(
     tableName = "linkentry",
-    indices = [Index(value = ["linkIndexId"])],
+    indices = [
+        Index(value = ["linkIndexId", "url"], unique = true)
+    ],
     foreignKeys = [
         ForeignKey(
             entity = LinkIndex::class,

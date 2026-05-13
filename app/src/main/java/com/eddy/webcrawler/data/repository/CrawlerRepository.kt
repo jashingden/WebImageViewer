@@ -82,6 +82,9 @@ class CrawlerRepository @Inject constructor(
                         status = if (allEntries.isEmpty()) "EMPTY" else "SUCCESS"
                     )
                     linkIndexId = linkIndexDao.insertIndex(linkIndex)
+                    if (linkIndexId == -1L) {
+                        linkIndexId = linkIndexDao.getIndexByUrl(entryData.url)?.id ?: 0L
+                    }
 
                     val subA = subData.aEntries.map { subEntry ->
                         LinkEntry(
@@ -125,7 +128,11 @@ class CrawlerRepository @Inject constructor(
                 status = if (allEntries.isEmpty()) "EMPTY" else "SUCCESS"
             )
 
-            val linkIndexId = linkIndexDao.insertIndex(linkIndex)
+            var linkIndexId = linkIndexDao.insertIndex(linkIndex)
+            if (linkIndexId == -1L) {
+                linkIndexId = linkIndexDao.getIndexByUrl(url)?.id
+                    ?: throw IllegalStateException("Failed to insert or retrieve link index")
+            }
 
             val aEntries = crawlData.aEntries.map { entryData ->
                 LinkEntry(
