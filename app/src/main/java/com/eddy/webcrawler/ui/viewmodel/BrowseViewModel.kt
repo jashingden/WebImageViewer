@@ -42,6 +42,13 @@ class BrowseViewModel @Inject constructor(
                 }
                 .collectLatest { items ->
                     _pageState.value = PageState.Success(items)
+                    
+                    // Trigger image downloads for missing localPaths
+                    items.forEach { item ->
+                        if (item is ContentItem.ImageItem && item.localPath == null) {
+                            repository.downloadImage(indexId, item.stableId.toLong(), item.url)
+                        }
+                    }
                 }
         }
     }

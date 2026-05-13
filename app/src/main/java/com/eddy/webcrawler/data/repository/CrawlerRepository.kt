@@ -1,5 +1,6 @@
 package com.eddy.webcrawler.data.repository
 
+import android.content.Context
 import com.eddy.webcrawler.data.crawler.WebCrawler
 import com.eddy.webcrawler.data.db.LinkEntryDao
 import com.eddy.webcrawler.data.db.LinkIndexDao
@@ -7,8 +8,14 @@ import com.eddy.webcrawler.data.model.ContentItem
 import com.eddy.webcrawler.data.model.DownloadStatus
 import com.eddy.webcrawler.data.model.LinkEntry
 import com.eddy.webcrawler.data.model.LinkIndex
+import dagger.hilt.android.qualifiers.ApplicationContext
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.withContext
+import okhttp3.OkHttpClient
+import java.io.File
+import java.io.FileOutputStream
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -21,8 +28,39 @@ data class CrawlResult(
 class CrawlerRepository @Inject constructor(
     private val webCrawler: WebCrawler,
     private val linkIndexDao: LinkIndexDao,
-    private val linkEntryDao: LinkEntryDao
+    private val linkEntryDao: LinkEntryDao,
+    private val client: OkHttpClient,
+    @ApplicationContext private val context: Context
 ) {
+
+    suspend fun downloadImage(indexId: Long, entryId: Long, url: String): String? = withContext(Dispatchers.IO) {
+        val imagesDir = context.filesDir.resolve("images/$indexId")
+        if (!imagesDir.exists()) imagesDir.mkdirs()
+
+        val filename = url.substringAfterLast('/').substringBefore('?')
+        val file = File(imagesDir, filename)
+
+        if (file.exists()) return@withContext file.absolutePath
+
+        try {
+            val request = okhttp3.Request.Builder().url(url).build()
+            client.newCall(request).execute().use { response ->
+                if (!response.isSuccessful) return@withContext null
+                response.body?.byteStream()?.use { input ->
+                    FileOutputStream(file).use { output ->
+                        input.copyTo(output)
+                    }
+                }
+            }
+
+            val entry = linkEntryDao.getEntryById(entryId) ?: return@withContext file.absolutePath
+            linkEntryDao.updateEntry(entry.copy(localPath = file.absolutePath))
+
+            file.absolutePath
+        } catch (e: Exception) {
+            null
+        }
+    }
 
     suspend fun crawl(url: String, pattern: String): Result<CrawlResult> = runCatching {
         val crawlData = webCrawler.fetchAndParse(url, pattern)
@@ -149,7 +187,9 @@ class CrawlerRepository @Inject constructor(
                     "IMAGE" -> ContentItem.ImageItem(
                         stableId = entry.id.toString(),
                         url = entry.url,
-                        displayName = entry.displayName
+                        displayName = entry.displayName,
+                        fileExtension = entry.fileExtension,
+                        localPath = entry.localPath
                     )
                     "DOWNLOAD" -> ContentItem.DownloadItem(
                         stableId = entry.id.toString(),

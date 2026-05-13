@@ -20,6 +20,9 @@ interface LinkEntryDao {
     @Query("SELECT * FROM linkentry WHERE linkIndexId = :indexId AND type = 'DOWNLOAD'")
     fun getDownloadsByIndexId(indexId: Long): Flow<List<LinkEntry>>
 
+    @Query("SELECT * FROM linkentry WHERE id = :id")
+    suspend fun getEntryById(id: Long): LinkEntry?
+
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertEntries(entries: List<LinkEntry>)
 

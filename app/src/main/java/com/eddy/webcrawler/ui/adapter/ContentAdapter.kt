@@ -24,6 +24,26 @@ class ContentAdapter(
         const val TYPE_DOWNLOAD = 2
     }
 
+    override fun submitList(list: List<ContentItem>?) {
+        val filteredList = list?.filter { item ->
+            if (item is ContentItem.ImageItem) {
+                val ext = item.fileExtension?.lowercase() ?: ""
+                ext != "png" && ext != "svg"
+            } else true
+        }
+        super.submitList(filteredList)
+    }
+
+    override fun submitList(list: List<ContentItem>?, commitCallback: Runnable?) {
+        val filteredList = list?.filter { item ->
+            if (item is ContentItem.ImageItem) {
+                val ext = item.fileExtension?.lowercase() ?: ""
+                ext != "png" && ext != "svg"
+            } else true
+        }
+        super.submitList(filteredList, commitCallback)
+    }
+
     override fun getItemViewType(position: Int): Int {
         return when (getItem(position)) {
             is ContentItem.ImageItem -> TYPE_IMAGE
@@ -52,7 +72,12 @@ class ContentAdapter(
 
     class ImageViewHolder(private val binding: ItemImageBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(item: ContentItem.ImageItem) {
-            binding.ivImage.load(item.url) {
+            val imageSource = if (item.localPath != null) {
+                java.io.File(item.localPath)
+            } else {
+                item.url
+            }
+            binding.ivImage.load(imageSource) {
                 crossfade(true)
                 placeholder(R.drawable.ic_placeholder)
                 error(R.drawable.ic_error)

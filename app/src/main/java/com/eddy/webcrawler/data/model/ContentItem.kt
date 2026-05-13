@@ -6,7 +6,9 @@ sealed class ContentItem {
     data class ImageItem(
         override val stableId: String,
         val url: String,
-        val displayName: String
+        val displayName: String,
+        val fileExtension: String? = null,
+        val localPath: String? = null
     ) : ContentItem()
 
     data class LinkItem(
