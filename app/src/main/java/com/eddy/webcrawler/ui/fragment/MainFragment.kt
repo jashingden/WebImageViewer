@@ -72,6 +72,14 @@ class MainFragment : Fragment() {
                         }
                     }
                 }
+
+                launch {
+                    viewModel.lastRule.collect { rule ->
+                        if (binding.etRule.text.isNullOrBlank()) {
+                            binding.etRule.setText(rule)
+                        }
+                    }
+                }
             }
         }
     }
@@ -80,13 +88,15 @@ class MainFragment : Fragment() {
         binding.btnCrawl.setOnClickListener {
             val url = binding.etUrl.text?.toString()?.trim() ?: ""
             val pattern = binding.etPattern.text?.toString()?.trim() ?: ""
-            viewModel.crawl(url, pattern)
+            val rule = binding.etRule.text?.toString()?.trim() ?: ""
+            viewModel.crawl(url, pattern, rule)
         }
 
         binding.btnRetry.setOnClickListener {
             val url = binding.etUrl.text?.toString()?.trim() ?: ""
             val pattern = binding.etPattern.text?.toString()?.trim() ?: ""
-            viewModel.crawl(url, pattern)
+            val rule = binding.etRule.text?.toString()?.trim() ?: ""
+            viewModel.crawl(url, pattern, rule)
         }
     }
 

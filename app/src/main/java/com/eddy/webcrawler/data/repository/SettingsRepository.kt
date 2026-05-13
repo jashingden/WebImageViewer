@@ -16,6 +16,7 @@ class SettingsRepository @Inject constructor(
     companion object {
         private val KEY_LAST_URL = stringPreferencesKey("last_url")
         private val KEY_LAST_PATTERN = stringPreferencesKey("last_pattern")
+        private val KEY_LAST_RULE = stringPreferencesKey("last_rule")
     }
 
     val lastUrl: Flow<String> = dataStore.data.map { preferences ->
@@ -26,10 +27,15 @@ class SettingsRepository @Inject constructor(
         preferences[KEY_LAST_PATTERN] ?: ""
     }
 
-    suspend fun saveLastCrawlSettings(url: String, pattern: String) {
+    val lastRule: Flow<String> = dataStore.data.map { preferences ->
+        preferences[KEY_LAST_RULE] ?: ""
+    }
+
+    suspend fun saveLastCrawlSettings(url: String, pattern: String, rule: String) {
         dataStore.edit { preferences ->
             preferences[KEY_LAST_URL] = url
             preferences[KEY_LAST_PATTERN] = pattern
+            preferences[KEY_LAST_RULE] = rule
         }
     }
 }

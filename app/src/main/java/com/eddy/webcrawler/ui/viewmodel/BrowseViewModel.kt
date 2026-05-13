@@ -18,7 +18,7 @@ import javax.inject.Inject
 sealed class PageState {
     object Idle : PageState()
     object Loading : PageState()
-    data class Success(val content: List<ContentItem>) : PageState()
+    data class Success(val title: String, val content: List<ContentItem>) : PageState()
     data class Error(val message: String) : PageState()
 }
 
@@ -36,12 +36,16 @@ class BrowseViewModel @Inject constructor(
         if (indexId == 0L) return
         viewModelScope.launch {
             _pageState.value = PageState.Loading
+            
+            val indexInfo = repository.getIndexById(indexId)
+            val title = indexInfo?.title ?: "未知頁面"
+
             repository.getEntriesAsContentItems(indexId)
                 .catch { error ->
                     _pageState.value = PageState.Error(error.message ?: "載入失敗")
                 }
                 .collectLatest { items ->
-                    _pageState.value = PageState.Success(items)
+                    _pageState.value = PageState.Success(title, items)
                     
                     // Trigger image downloads for missing localPaths
                     items.forEach { item ->

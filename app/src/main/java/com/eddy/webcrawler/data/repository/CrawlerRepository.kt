@@ -62,7 +62,7 @@ class CrawlerRepository @Inject constructor(
         }
     }
 
-    suspend fun crawl(url: String, pattern: String): Result<CrawlResult> = runCatching {
+    suspend fun crawl(url: String, pattern: String, rule: String): Result<CrawlResult> = runCatching {
         val crawlData = webCrawler.fetchAndParse(url, pattern)
 
         if (crawlData.aEntries.isNotEmpty()) {
@@ -71,12 +71,12 @@ class CrawlerRepository @Inject constructor(
             var totalEntries = 0
             crawlData.aEntries.forEach { entryData ->
                 runCatching {
-                    val subData = webCrawler.fetchAndParse(entryData.url, pattern)
+                    val subData = webCrawler.fetchAndParse(entryData.url, if (rule.isNotBlank()) rule else pattern)
                     val allEntries = subData.aEntries + subData.imgEntries
 
                     val linkIndex = LinkIndex(
                         sourceUrl = entryData.url,
-                        filterPattern = pattern,
+                        filterPattern = if (rule.isNotBlank()) rule else pattern,
                         title = subData.title,
                         crawlTimestamp = System.currentTimeMillis(),
                         status = if (allEntries.isEmpty()) "EMPTY" else "SUCCESS"
@@ -170,6 +170,8 @@ class CrawlerRepository @Inject constructor(
 
     fun getAllIndices(): Flow<List<LinkIndex>> = linkIndexDao.getAllIndices()
 
+    suspend fun getIndexById(id: Long): LinkIndex? = linkIndexDao.getIndexById(id)
+
     fun getEntriesByIndexId(indexId: Long): Flow<List<LinkEntry>> =
         linkEntryDao.getEntriesByIndexId(indexId)
 
@@ -205,6 +207,11 @@ class CrawlerRepository @Inject constructor(
                         fileExtension = entry.fileExtension ?: "",
                         downloadStatus = parseDownloadStatus(entry.downloadStatus),
                         localPath = entry.localPath
+                    )
+                    "HTML" -> ContentItem.HtmlItem(
+                        stableId = entry.id.toString(),
+                        url = entry.url,
+                        displayName = entry.displayName
                     )
                     else -> ContentItem.LinkItem(
                         stableId = entry.id.toString(),

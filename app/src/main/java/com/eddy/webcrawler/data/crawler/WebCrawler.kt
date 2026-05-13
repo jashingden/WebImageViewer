@@ -32,10 +32,12 @@ class WebCrawler @Inject constructor(
         private val IMAGE = "IMAGE"
         private val VIDEO = "VIDEO"
         private val ARCHIVE = "ARCHIVE"
+        private val HTML = "HTML"
 
         private val IMAGE_EXTENSIONS = setOf("jpg", "jpeg", "png", "gif", "webp", "bmp", "svg")
         private val VIDEO_EXTENSIONS = setOf("mp4", "webm", "mkv", "avi")
         private val ARCHIVE_EXTENSIONS = setOf("zip", "rar", "7z", "tar", "gz")
+        private val HTML_EXTENSIONS = setOf("html", "htm")
     }
 
     suspend fun fetchAndParse(url: String, pattern: String): CrawlData = withContext(Dispatchers.IO) {
@@ -87,6 +89,7 @@ class WebCrawler @Inject constructor(
             ext in IMAGE_EXTENSIONS -> IMAGE
             ext in VIDEO_EXTENSIONS -> VIDEO
             ext in ARCHIVE_EXTENSIONS -> ARCHIVE
+            ext in HTML_EXTENSIONS || url.endsWith("/") || !url.contains(".") -> HTML
             else -> LINK
         }
     }

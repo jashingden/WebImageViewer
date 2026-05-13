@@ -17,6 +17,12 @@ sealed class ContentItem {
         val displayName: String
     ) : ContentItem()
 
+    data class HtmlItem(
+        override val stableId: String,
+        val url: String,
+        val displayName: String
+    ) : ContentItem()
+
     data class DownloadItem(
         override val stableId: String,
         val url: String,

@@ -45,6 +45,26 @@
             android:maxLines="1" />
     </com.google.android.material.textfield.TextInputLayout>
 
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilRule"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_small"
+        android:hint="@string/download_rule"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tilPattern">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etRule"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"
+            android:text=""
+            android:maxLines="1" />
+    </com.google.android.material.textfield.TextInputLayout>
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnCrawl"
         android:layout_width="0dp"
@@ -53,7 +73,7 @@
         android:text="@string/crawl"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tilPattern" />
+        app:layout_constraintTop_toBottomOf="@id/tilRule" />
 
     <ProgressBar
         android:id="@+id/progressBar"

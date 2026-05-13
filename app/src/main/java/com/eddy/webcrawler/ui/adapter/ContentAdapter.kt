@@ -15,17 +15,27 @@ import com.eddy.webcrawler.databinding.ItemZipDownloadBinding
 
 class ContentAdapter(
     private val onDownloadClick: (ContentItem.DownloadItem) -> Unit = {},
-    private val onViewZipClick: (ContentItem.DownloadItem) -> Unit = {}
+    private val onViewZipClick: (ContentItem.DownloadItem) -> Unit = {},
+    private val onHtmlClick: (ContentItem.HtmlItem) -> Unit = {}
 ) : ListAdapter<ContentItem, RecyclerView.ViewHolder>(ContentItemDiffCallback()) {
 
     companion object {
         const val TYPE_IMAGE = 0
         const val TYPE_LINK = 1
         const val TYPE_DOWNLOAD = 2
+        const val TYPE_HTML = 3
     }
 
     override fun submitList(list: List<ContentItem>?) {
-        val filteredList = list?.filter { item ->
+        val sortedList = list?.sortedBy { item ->
+            when (item) {
+                is ContentItem.ImageItem -> 0
+                is ContentItem.HtmlItem -> 1
+                is ContentItem.LinkItem -> 2
+                is ContentItem.DownloadItem -> 3
+            }
+        }
+        val filteredList = sortedList?.filter { item ->
             if (item is ContentItem.ImageItem) {
                 val ext = item.fileExtension?.lowercase() ?: ""
                 ext != "png" && ext != "svg"
@@ -35,7 +45,15 @@ class ContentAdapter(
     }
 
     override fun submitList(list: List<ContentItem>?, commitCallback: Runnable?) {
-        val filteredList = list?.filter { item ->
+        val sortedList = list?.sortedBy { item ->
+            when (item) {
+                is ContentItem.ImageItem -> 0
+                is ContentItem.HtmlItem -> 1
+                is ContentItem.LinkItem -> 2
+                is ContentItem.DownloadItem -> 3
+            }
+        }
+        val filteredList = sortedList?.filter { item ->
             if (item is ContentItem.ImageItem) {
                 val ext = item.fileExtension?.lowercase() ?: ""
                 ext != "png" && ext != "svg"
@@ -49,6 +67,7 @@ class ContentAdapter(
             is ContentItem.ImageItem -> TYPE_IMAGE
             is ContentItem.LinkItem -> TYPE_LINK
             is ContentItem.DownloadItem -> TYPE_DOWNLOAD
+            is ContentItem.HtmlItem -> TYPE_HTML
         }
     }
 
@@ -58,6 +77,7 @@ class ContentAdapter(
             TYPE_IMAGE -> ImageViewHolder(ItemImageBinding.inflate(inflater, parent, false))
             TYPE_LINK -> LinkViewHolder(ItemLinkBinding.inflate(inflater, parent, false))
             TYPE_DOWNLOAD -> DownloadViewHolder(ItemZipDownloadBinding.inflate(inflater, parent, false))
+            TYPE_HTML -> HtmlViewHolder(ItemLinkBinding.inflate(inflater, parent, false))
             else -> throw IllegalArgumentException("Unknown view type: $viewType")
         }
     }
@@ -67,6 +87,7 @@ class ContentAdapter(
             is ContentItem.ImageItem -> (holder as ImageViewHolder).bind(item)
             is ContentItem.LinkItem -> (holder as LinkViewHolder).bind(item)
             is ContentItem.DownloadItem -> (holder as DownloadViewHolder).bind(item, onDownloadClick, onViewZipClick)
+            is ContentItem.HtmlItem -> (holder as HtmlViewHolder).bind(item, onHtmlClick)
         }
     }
 
@@ -88,6 +109,13 @@ class ContentAdapter(
     class LinkViewHolder(private val binding: ItemLinkBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(item: ContentItem.LinkItem) {
             binding.tvLink.text = item.displayName
+        }
+    }
+
+    class HtmlViewHolder(private val binding: ItemLinkBinding) : RecyclerView.ViewHolder(binding.root) {
+        fun bind(item: ContentItem.HtmlItem, onHtmlClick: (ContentItem.HtmlItem) -> Unit) {
+            binding.tvLink.text = item.displayName
+            binding.root.setOnClickListener { onHtmlClick(item) }
         }
     }
 

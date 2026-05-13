@@ -29,4 +29,5 @@
     <string name="menu_browse">觀看網頁圖片</string>
     <string name="menu_load_zip">載入壓縮檔</string>
     <string name="select_folder">選擇資料夾</string>
+    <string name="download_rule">下載規則</string>
 </resources>

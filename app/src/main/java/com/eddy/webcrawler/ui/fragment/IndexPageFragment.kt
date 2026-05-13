@@ -63,6 +63,10 @@ class IndexPageFragment : Fragment() {
                     val action = BrowseFragmentDirections.actionBrowseFragmentToZipViewerFragment(item.localPath)
                     findNavController().navigate(action)
                 }
+            },
+            onHtmlClick = { item ->
+                val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(item.url))
+                startActivity(intent)
             }
         )
 
@@ -74,6 +78,7 @@ class IndexPageFragment : Fragment() {
                 viewModel.pageState.collect { state ->
                     when (state) {
                         is com.eddy.webcrawler.ui.viewmodel.PageState.Success -> {
+                            binding.tvPageTitle.text = state.title
                             adapter.submitList(state.content)
                         }
                         else -> {}

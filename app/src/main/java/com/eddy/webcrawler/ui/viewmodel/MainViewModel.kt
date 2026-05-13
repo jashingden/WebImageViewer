@@ -42,11 +42,17 @@ class MainViewModel @Inject constructor(
         initialValue = ""
     )
 
+    val lastRule: StateFlow<String> = settingsRepository.lastRule.stateIn(
+        scope = viewModelScope,
+        started = SharingStarted.WhileSubscribed(5000),
+        initialValue = ""
+    )
+
     fun resetCrawlState() {
         _crawlState.value = CrawlState.Idle
     }
 
-    fun crawl(url: String, pattern: String) {
+    fun crawl(url: String, pattern: String, rule: String) {
         if (url.isBlank()) {
             _crawlState.value = CrawlState.Error("網址不能為空")
             return
@@ -58,9 +64,9 @@ class MainViewModel @Inject constructor(
         }
 
         viewModelScope.launch {
-            settingsRepository.saveLastCrawlSettings(url, pattern)
+            settingsRepository.saveLastCrawlSettings(url, pattern, rule)
             _crawlState.value = CrawlState.Loading
-            repository.crawl(url, pattern)
+            repository.crawl(url, pattern, rule)
                 .fold(
                     onSuccess = { result ->
                         _crawlState.value = CrawlState.Success(result)
