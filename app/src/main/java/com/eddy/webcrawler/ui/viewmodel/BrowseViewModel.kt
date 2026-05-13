@@ -30,7 +30,10 @@ class BrowseViewModel @Inject constructor(
     private val _pageState = MutableStateFlow<PageState>(PageState.Idle)
     val pageState: StateFlow<PageState> = _pageState.asStateFlow()
 
+    val allIndices = repository.getAllIndices()
+
     fun loadContent(indexId: Long) {
+        if (indexId == 0L) return
         viewModelScope.launch {
             _pageState.value = PageState.Loading
             repository.getEntriesAsContentItems(indexId)

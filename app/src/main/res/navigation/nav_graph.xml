@@ -8,7 +8,7 @@
     <fragment
         android:id="@+id/mainFragment"
         android:name="com.eddy.webcrawler.ui.fragment.MainFragment"
-        android:label="@string/app_name"
+        android:label="@string/menu_crawl"
         tools:layout="@layout/fragment_main">
         <action
             android:id="@+id/action_mainFragment_to_browseFragment"
@@ -18,7 +18,7 @@
     <fragment
         android:id="@+id/browseFragment"
         android:name="com.eddy.webcrawler.ui.fragment.BrowseFragment"
-        android:label="@string/browse_indices"
+        android:label="@string/menu_browse"
         tools:layout="@layout/fragment_browse">
         <argument
             android:name="linkIndexId"
@@ -32,11 +32,13 @@
     <fragment
         android:id="@+id/zipViewerFragment"
         android:name="com.eddy.webcrawler.ui.fragment.ZipViewerFragment"
-        android:label="@string/view_zip"
+        android:label="@string/menu_load_zip"
         tools:layout="@layout/fragment_zip_viewer">
         <argument
             android:name="localPath"
-            app:argType="string" />
+            app:argType="string"
+            android:defaultValue="@null"
+            app:nullable="true" />
     </fragment>
 
 </navigation>

@@ -9,8 +9,6 @@ import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
-import androidx.viewpager2.widget.ViewPager2
-import com.eddy.webcrawler.R
 import com.eddy.webcrawler.databinding.FragmentBrowseBinding
 import com.eddy.webcrawler.ui.adapter.LinkIndexPagerAdapter
 import com.eddy.webcrawler.ui.viewmodel.BrowseViewModel
@@ -41,8 +39,27 @@ class BrowseFragment : Fragment() {
 
         val linkIndexId = BrowseFragmentArgs.fromBundle(requireArguments()).linkIndexId
 
-        adapter = LinkIndexPagerAdapter(this, listOf(linkIndexId))
-        binding.viewPager.adapter = adapter
+        if (linkIndexId == 0L) {
+            viewLifecycleOwner.lifecycleScope.launch {
+                viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                    viewModel.allIndices.collect { indices ->
+                        if (indices.isNotEmpty()) {
+                            adapter = LinkIndexPagerAdapter(this@BrowseFragment, indices.map { it.id })
+                            binding.viewPager.adapter = adapter
+                            binding.tvEmptyState.visibility = View.GONE
+                        } else {
+                            binding.tvEmptyState.visibility = View.VISIBLE
+                            binding.tvEmptyState.text = "尚未有爬取紀錄"
+                        }
+                    }
+                }
+            }
+        } else {
+            adapter = LinkIndexPagerAdapter(this, listOf(linkIndexId))
+            binding.viewPager.adapter = adapter
+            viewModel.loadContent(linkIndexId)
+        }
+
         binding.viewPager.offscreenPageLimit = 1
 
         viewLifecycleOwner.lifecycleScope.launch {
@@ -70,8 +87,6 @@ class BrowseFragment : Fragment() {
                 }
             }
         }
-
-        viewModel.loadContent(linkIndexId)
     }
 
     override fun onDestroyView() {

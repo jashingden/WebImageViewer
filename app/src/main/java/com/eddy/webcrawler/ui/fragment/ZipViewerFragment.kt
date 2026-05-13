@@ -55,24 +55,34 @@ class ZipViewerFragment : Fragment() {
                         is ZipViewerState.Loading -> {
                             binding.recyclerView.visibility = View.GONE
                             binding.tvEmptyState.visibility = View.GONE
+                            binding.btnSelectFolder.visibility = View.GONE
                         }
                         is ZipViewerState.Success -> {
                             binding.recyclerView.visibility = View.VISIBLE
                             binding.tvEmptyState.visibility = View.GONE
+                            binding.btnSelectFolder.visibility = View.GONE
                             adapter.submitList(state.mediaItems)
                         }
                         is ZipViewerState.Error -> {
                             binding.recyclerView.visibility = View.GONE
                             binding.tvEmptyState.visibility = View.VISIBLE
                             binding.tvEmptyState.text = state.message
+                            binding.btnSelectFolder.visibility = View.VISIBLE
                         }
                         is ZipViewerState.Idle -> {
                             binding.recyclerView.visibility = View.GONE
-                            binding.tvEmptyState.visibility = View.GONE
+                            binding.tvEmptyState.visibility = View.VISIBLE
+                            binding.tvEmptyState.text = "請選擇包含媒體檔案的資料夾"
+                            binding.btnSelectFolder.visibility = View.VISIBLE
                         }
                     }
                 }
             }
+        }
+
+        binding.btnSelectFolder.setOnClickListener {
+            // Placeholder for folder picker
+            // In a real app, use ActivityResultLauncher with Intent.ACTION_OPEN_DOCUMENT_TREE
         }
 
         viewModel.scanMedia(localPath)

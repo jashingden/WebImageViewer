@@ -25,4 +25,8 @@
     <string name="default_filter_pattern">.*</string>
     <string name="permission_required">需要儲存空間權限</string>
     <string name="permission_denied">權限被拒絕，無法下載檔案</string>
+    <string name="menu_crawl">爬取指定網頁</string>
+    <string name="menu_browse">觀看網頁圖片</string>
+    <string name="menu_load_zip">載入壓縮檔</string>
+    <string name="select_folder">選擇資料夾</string>
 </resources>

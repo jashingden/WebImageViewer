@@ -28,10 +28,14 @@ class ZipViewerViewModel @Inject constructor() : ViewModel() {
     private val imageExtensions = setOf("jpg", "jpeg", "png", "gif", "webp", "bmp", "svg")
     private val videoExtensions = setOf("mp4", "webm", "mkv", "avi")
 
-    fun scanMedia(localPath: String) {
+    fun scanMedia(localPath: String?) {
         viewModelScope.launch {
             _zipViewerState.value = ZipViewerState.Loading
             try {
+                if (localPath == null) {
+                    _zipViewerState.value = ZipViewerState.Idle
+                    return@launch
+                }
                 val directory = File(localPath)
                 if (!directory.exists() || !directory.isDirectory) {
                     _zipViewerState.value = ZipViewerState.Error("目錄不存在")
