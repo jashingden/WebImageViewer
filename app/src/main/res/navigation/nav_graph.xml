@@ -30,6 +30,16 @@
     </fragment>
 
     <fragment
+        android:id="@+id/selectIndexFragment"
+        android:name="com.eddy.webcrawler.ui.fragment.SelectIndexFragment"
+        android:label="@string/menu_select_index"
+        tools:layout="@layout/fragment_select_index">
+        <action
+            android:id="@+id/action_selectIndexFragment_to_browseFragment"
+            app:destination="@id/browseFragment" />
+    </fragment>
+
+    <fragment
         android:id="@+id/zipViewerFragment"
         android:name="com.eddy.webcrawler.ui.fragment.ZipViewerFragment"
         android:label="@string/menu_load_zip"

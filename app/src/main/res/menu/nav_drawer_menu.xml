@@ -7,6 +7,9 @@
         android:id="@+id/browseFragment"
         android:title="@string/menu_browse" />
     <item
+        android:id="@+id/selectIndexFragment"
+        android:title="@string/menu_select_index" />
+    <item
         android:id="@+id/zipViewerFragment"
         android:title="@string/menu_load_zip" />
     <item

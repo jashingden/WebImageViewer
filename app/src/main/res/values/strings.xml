@@ -27,6 +27,7 @@
     <string name="permission_denied">權限被拒絕，無法下載檔案</string>
     <string name="menu_crawl">爬取指定網頁</string>
     <string name="menu_browse">觀看網頁圖片</string>
+    <string name="menu_select_index">選取網頁列表</string>
     <string name="menu_load_zip">載入壓縮檔</string>
     <string name="select_folder">選擇資料夾</string>
     <string name="download_rule">下載規則</string>
@@ -39,4 +40,10 @@
     <string name="settings_lock_success">密碼設定成功</string>
     <string name="lock_screen_title">請輸入密碼進入</string>
     <string name="lock_error_wrong_pin">密碼錯誤，程式將關閉</string>
+    <string name="no_indices_found">尚無爬取過的網頁</string>
+    <string name="delete_index_confirm_title">確認刪除</string>
+    <string name="delete_index_confirm_message">確定要刪除此網頁及所有相關內容與檔案嗎？</string>
+    <string name="action_display">顯示</string>
+    <string name="action_delete">刪除</string>
+    <string name="cancel">取消</string>
 </resources>

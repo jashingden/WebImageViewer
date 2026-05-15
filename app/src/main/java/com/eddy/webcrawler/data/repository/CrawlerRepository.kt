@@ -6,11 +6,13 @@ import com.eddy.webcrawler.data.db.LinkEntryDao
 import com.eddy.webcrawler.data.db.LinkIndexDao
 import com.eddy.webcrawler.data.model.ContentItem
 import com.eddy.webcrawler.data.model.DownloadStatus
+import com.eddy.webcrawler.data.model.IndexWithThumbnail
 import com.eddy.webcrawler.data.model.LinkEntry
 import com.eddy.webcrawler.data.model.LinkIndex
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.withContext
 import okhttp3.OkHttpClient
@@ -187,6 +189,33 @@ class CrawlerRepository @Inject constructor(
 
     suspend fun deleteIndex(index: LinkIndex) {
         linkIndexDao.deleteIndex(index)
+    }
+
+    suspend fun deleteIndexWithFiles(indexId: Long) = withContext(Dispatchers.IO) {
+        val index = linkIndexDao.getIndexById(indexId) ?: return@withContext
+        val entries = linkEntryDao.getEntriesByIndexIdList(indexId)
+        
+        entries.forEach { entry ->
+            entry.localPath?.let { path ->
+                val file = File(path)
+                if (file.exists()) {
+                    file.delete()
+                }
+            }
+        }
+        
+        // Delete the images directory for this index if it exists
+        val imagesDir = context.filesDir.resolve("images/$indexId")
+        if (imagesDir.exists()) {
+            imagesDir.deleteRecursively()
+        }
+
+        linkEntryDao.deleteEntriesByIndexId(indexId)
+        linkIndexDao.deleteIndex(index)
+    }
+
+    fun getIndicesWithThumbnails(): Flow<List<IndexWithThumbnail>> {
+        return linkIndexDao.getIndicesWithThumbnails()
     }
 
     fun getEntriesAsContentItems(indexId: Long): Flow<List<ContentItem>> {

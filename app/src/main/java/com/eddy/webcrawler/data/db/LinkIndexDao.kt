@@ -6,6 +6,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
+import com.eddy.webcrawler.data.model.IndexWithThumbnail
 import com.eddy.webcrawler.data.model.LinkIndex
 import kotlinx.coroutines.flow.Flow
 
@@ -14,6 +15,15 @@ interface LinkIndexDao {
 
     @Query("SELECT * FROM linkindex ORDER BY crawlTimestamp DESC")
     fun getAllIndices(): Flow<List<LinkIndex>>
+
+    @Query("""
+        SELECT li.*, 
+               (SELECT url FROM linkentry WHERE linkIndexId = li.id AND type = 'IMAGE' AND (fileExtension IS NULL OR LOWER(fileExtension) != 'png') LIMIT 1) as thumbnailUrl,
+               (SELECT localPath FROM linkentry WHERE linkIndexId = li.id AND type = 'IMAGE' AND (fileExtension IS NULL OR LOWER(fileExtension) != 'png') LIMIT 1) as localThumbnailPath
+        FROM linkindex li
+        ORDER BY li.crawlTimestamp DESC
+    """)
+    fun getIndicesWithThumbnails(): Flow<List<IndexWithThumbnail>>
 
     @Query("SELECT * FROM linkindex WHERE id = :id")
     suspend fun getIndexById(id: Long): LinkIndex?

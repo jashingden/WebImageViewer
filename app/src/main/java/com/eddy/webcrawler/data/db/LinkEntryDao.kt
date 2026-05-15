@@ -23,6 +23,12 @@ interface LinkEntryDao {
     @Query("SELECT * FROM linkentry WHERE id = :id")
     suspend fun getEntryById(id: Long): LinkEntry?
 
+    @Query("SELECT * FROM linkentry WHERE linkIndexId = :indexId")
+    suspend fun getEntriesByIndexIdList(indexId: Long): List<LinkEntry>
+
+    @Query("SELECT * FROM linkentry WHERE linkIndexId = :indexId AND type = 'IMAGE' LIMIT 1")
+    suspend fun getFirstImageByIndexId(indexId: Long): LinkEntry?
+
     @Insert(onConflict = OnConflictStrategy.IGNORE)
     suspend fun insertEntries(entries: List<LinkEntry>)
 
