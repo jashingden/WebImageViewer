@@ -41,4 +41,10 @@
             app:nullable="true" />
     </fragment>
 
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.eddy.webcrawler.ui.fragment.SettingsFragment"
+        android:label="@string/menu_settings"
+        tools:layout="@layout/fragment_settings" />
+
 </navigation>

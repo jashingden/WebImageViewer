@@ -26,19 +26,17 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val drawerLayout: DrawerLayout = findViewById(R.id.drawerLayout)
         val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
 
-        val drawerLayout: DrawerLayout = findViewById(R.id.drawerLayout)
         val navView: NavigationView = findViewById(R.id.navView)
         
         val navHostFragment = supportFragmentManager.findFragmentById(R.id.navHostFragment) as NavHostFragment
         navController = navHostFragment.navController
 
-        // Passing each menu ID as a set of Ids because each
-        // menu should be considered as top level destinations.
         appBarConfiguration = AppBarConfiguration(
-            setOf(R.id.mainFragment, R.id.browseFragment, R.id.zipViewerFragment),
+            setOf(R.id.mainFragment, R.id.browseFragment, R.id.zipViewerFragment, R.id.settingsFragment),
             drawerLayout
         )
         setupActionBarWithNavController(navController, appBarConfiguration)

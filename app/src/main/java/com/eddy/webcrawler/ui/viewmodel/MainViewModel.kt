@@ -27,6 +27,13 @@ class MainViewModel @Inject constructor(
     private val settingsRepository: SettingsRepository
 ) : ViewModel() {
 
+    var isAppUnlocked: Boolean = false
+        private set
+
+    fun setUnlocked() {
+        isAppUnlocked = true
+    }
+
     private val _crawlState = MutableStateFlow<CrawlState>(CrawlState.Idle)
     val crawlState: StateFlow<CrawlState> = _crawlState.asStateFlow()
 

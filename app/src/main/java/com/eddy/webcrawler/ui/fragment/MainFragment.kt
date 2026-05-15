@@ -1,9 +1,14 @@
 package com.eddy.webcrawler.ui.fragment
 
 import android.os.Bundle
+import android.text.InputFilter
+import android.text.InputType
+import android.view.KeyEvent
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
+import android.widget.FrameLayout
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -13,14 +18,21 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation.fragment.findNavController
 import com.eddy.webcrawler.R
 import com.eddy.webcrawler.data.repository.CrawlResult
+import com.eddy.webcrawler.data.repository.SettingsRepository
 import com.eddy.webcrawler.databinding.FragmentMainBinding
 import com.eddy.webcrawler.ui.viewmodel.CrawlState
 import com.eddy.webcrawler.ui.viewmodel.MainViewModel
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+import javax.inject.Inject
 
 @AndroidEntryPoint
 class MainFragment : Fragment() {
+
+    @Inject
+    lateinit var settingsRepository: SettingsRepository
 
     private var _binding: FragmentMainBinding? = null
     private val binding get() = _binding!!
@@ -39,8 +51,70 @@ class MainFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        checkAppLock()
         setupObservers()
         setupClickListeners()
+    }
+
+    private fun checkAppLock() {
+        if (viewModel.isAppUnlocked) return
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            val isEnabled = settingsRepository.lockEnabled.first()
+            if (isEnabled) {
+                val pin = settingsRepository.lockPin.first()
+                showAppLockDialog(pin)
+            } else {
+                viewModel.setUnlocked()
+            }
+        }
+    }
+
+    private fun showAppLockDialog(correctPin: String?) {
+        val editText = EditText(requireContext()).apply {
+            inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_VARIATION_PASSWORD
+            filters = arrayOf(InputFilter.LengthFilter(4))
+            hint = "1234"
+        }
+        val container = FrameLayout(requireContext())
+        val params = FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+        params.setMargins(48, 20, 48, 20)
+        editText.layoutParams = params
+        container.addView(editText)
+
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.lock_screen_title)
+            .setView(container)
+            .setPositiveButton("確定", null)
+            .setCancelable(false)
+            .setOnKeyListener { _, keyCode, _ ->
+                if (keyCode == KeyEvent.KEYCODE_BACK) {
+                    requireActivity().finish()
+                    true
+                } else false
+            }
+            .create()
+            .apply {
+                show()
+                getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                    val enteredPin = editText.text.toString()
+                    if (enteredPin == correctPin) {
+                        viewModel.setUnlocked()
+                        dismiss()
+                    } else {
+                        dismiss()
+                        showLockErrorAndExit()
+                    }
+                }
+            }
+    }
+
+    private fun showLockErrorAndExit() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setMessage(R.string.lock_error_wrong_pin)
+            .setPositiveButton("離開") { _, _ -> requireActivity().finish() }
+            .setCancelable(false)
+            .show()
     }
 
     private fun setupObservers() {

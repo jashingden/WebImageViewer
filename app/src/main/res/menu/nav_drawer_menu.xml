@@ -9,4 +9,7 @@
     <item
         android:id="@+id/zipViewerFragment"
         android:title="@string/menu_load_zip" />
+    <item
+        android:id="@+id/settingsFragment"
+        android:title="@string/menu_settings" />
 </menu>
