@@ -3,12 +3,11 @@ package com.eddy.webcrawler.ui.fragment
 import android.os.Bundle
 import android.text.InputFilter
 import android.text.InputType
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
@@ -21,6 +20,9 @@ import com.eddy.webcrawler.ui.viewmodel.SettingsViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @AndroidEntryPoint
 class SettingsFragment : Fragment() {
@@ -29,6 +31,22 @@ class SettingsFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: SettingsViewModel by viewModels()
+
+    private val backupLauncher = registerForActivityResult(ActivityResultContracts.CreateDocument("application/octet-stream")) { uri ->
+        uri?.let {
+            requireContext().contentResolver.openOutputStream(it)?.let { outputStream ->
+                viewModel.backupData(outputStream)
+            }
+        }
+    }
+
+    private val restoreLauncher = registerForActivityResult(ActivityResultContracts.OpenDocument()) { uri ->
+        uri?.let {
+            requireContext().contentResolver.openInputStream(it)?.let { inputStream ->
+                viewModel.restoreData(inputStream)
+            }
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -48,9 +66,35 @@ class SettingsFragment : Fragment() {
     private fun setupObservers() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.lockEnabled.collect { enabled ->
-                    if (binding.switchLock.isChecked != enabled) {
-                        binding.switchLock.isChecked = enabled
+                launch {
+                    viewModel.lockEnabled.collect { enabled ->
+                        if (binding.switchLock.isChecked != enabled) {
+                            binding.switchLock.isChecked = enabled
+                        }
+                    }
+                }
+                launch {
+                    viewModel.backupResult.collect { result ->
+                        result.onSuccess {
+                            Toast.makeText(requireContext(), R.string.backup_success, Toast.LENGTH_SHORT).show()
+                        }.onFailure {
+                            Toast.makeText(requireContext(), R.string.backup_failed, Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+                launch {
+                    viewModel.restoreResult.collect { result ->
+                        result.onSuccess {
+                            MaterialAlertDialogBuilder(requireContext())
+                                .setTitle(R.string.restore_success)
+                                .setPositiveButton("確定") { _, _ ->
+                                    activity?.finishAffinity() // Restart app
+                                }
+                                .setCancelable(false)
+                                .show()
+                        }.onFailure {
+                            Toast.makeText(requireContext(), R.string.restore_failed, Toast.LENGTH_SHORT).show()
+                        }
                     }
                 }
             }
@@ -67,6 +111,15 @@ class SettingsFragment : Fragment() {
                 // If turning OFF, just update
                 viewModel.setLockEnabled(false)
             }
+        }
+
+        binding.btnBackup.setOnClickListener {
+            val fileName = SimpleDateFormat("yyyyMMdd", Locale.getDefault()).format(Date()) + ".wiv"
+            backupLauncher.launch(fileName)
+        }
+
+        binding.btnRestore.setOnClickListener {
+            restoreLauncher.launch(arrayOf("application/octet-stream", "*/*"))
         }
     }
 
