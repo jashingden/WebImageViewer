@@ -2,8 +2,12 @@ package com.eddy.webcrawler.ui
 
 import android.os.Bundle
 import androidx.activity.OnBackPressedCallback
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.updatePadding
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.navigation.NavController
 import androidx.navigation.fragment.NavHostFragment
@@ -23,12 +27,19 @@ class MainActivity : AppCompatActivity() {
     private lateinit var navController: NavController
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        enableEdgeToEdge()
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        val drawerLayout: DrawerLayout = findViewById(R.id.drawerLayout)
+        val drawerLayout: DrawerLayout = findViewById(R.id.main)
         val toolbar = findViewById<androidx.appcompat.widget.Toolbar>(R.id.toolbar)
         setSupportActionBar(toolbar)
+
+        ViewCompat.setOnApplyWindowInsetsListener(drawerLayout) { _, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            toolbar.updatePadding(top = systemBars.top)
+            insets
+        }
 
         val navView: NavigationView = findViewById(R.id.navView)
         
