@@ -35,7 +35,7 @@ class IndexPageFragment : Fragment() {
     private var _binding: FragmentBrowsePageBinding? = null
     private val binding get() = _binding!!
 
-    private val viewModel: com.eddy.webcrawler.ui.viewmodel.BrowseViewModel by viewModels()
+    private val viewModel: com.eddy.webcrawler.ui.viewmodel.BrowseViewModel by viewModels({ requireParentFragment() })
     private lateinit var adapter: ContentAdapter
 
     override fun onCreateView(
@@ -67,6 +67,12 @@ class IndexPageFragment : Fragment() {
             onHtmlClick = { item ->
                 val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(item.url))
                 startActivity(intent)
+            },
+            onDeleteClick = { item ->
+                viewModel.deleteItem(item.stableId)
+            },
+            onToggleSelection = { id ->
+                viewModel.toggleSelection(id)
             }
         )
 
@@ -75,13 +81,25 @@ class IndexPageFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.pageState.collect { state ->
-                    when (state) {
-                        is com.eddy.webcrawler.ui.viewmodel.PageState.Success -> {
-                            binding.tvPageTitle.text = state.title
-                            adapter.submitList(state.content)
+                launch {
+                    viewModel.pageState.collect { state ->
+                        when (state) {
+                            is com.eddy.webcrawler.ui.viewmodel.PageState.Success -> {
+                                binding.tvPageTitle.text = state.title
+                                adapter.submitList(state.content)
+                            }
+                            else -> {}
                         }
-                        else -> {}
+                    }
+                }
+                launch {
+                    viewModel.isEditMode.collect { isEditMode ->
+                        adapter.updateEditMode(isEditMode, viewModel.selectedIds.value)
+                    }
+                }
+                launch {
+                    viewModel.selectedIds.collect { selectedIds ->
+                        adapter.updateEditMode(viewModel.isEditMode.value, selectedIds)
                     }
                 }
             }

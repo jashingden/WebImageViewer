@@ -214,6 +214,30 @@ class CrawlerRepository @Inject constructor(
         linkIndexDao.deleteIndex(index)
     }
 
+    suspend fun deleteEntry(entryId: Long) = withContext(Dispatchers.IO) {
+        val entry = linkEntryDao.getEntryById(entryId) ?: return@withContext
+        entry.localPath?.let { path ->
+            val file = File(path)
+            if (file.exists()) {
+                file.delete()
+            }
+        }
+        linkEntryDao.deleteEntryById(entryId)
+    }
+
+    suspend fun deleteEntries(entryIds: List<Long>) = withContext(Dispatchers.IO) {
+        entryIds.forEach { entryId ->
+            val entry = linkEntryDao.getEntryById(entryId)
+            entry?.localPath?.let { path ->
+                val file = File(path)
+                if (file.exists()) {
+                    file.delete()
+                }
+            }
+        }
+        linkEntryDao.deleteEntriesByIds(entryIds)
+    }
+
     fun getIndicesWithThumbnails(): Flow<List<IndexWithThumbnail>> {
         return linkIndexDao.getIndicesWithThumbnails()
     }

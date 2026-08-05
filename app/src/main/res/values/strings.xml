@@ -53,4 +53,7 @@
     <string name="restore_success">還原成功，請重新啟動應用程式</string>
     <string name="backup_failed">備份失敗</string>
     <string name="restore_failed">還原失敗</string>
+
+    <string name="action_edit">編輯</string>
+    <string name="action_delete_all">全部刪除</string>
 </resources>

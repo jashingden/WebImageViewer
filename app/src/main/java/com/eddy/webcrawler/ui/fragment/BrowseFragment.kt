@@ -1,14 +1,14 @@
 package com.eddy.webcrawler.ui.fragment
 
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
+import androidx.core.view.MenuProvider
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import com.eddy.webcrawler.R
 import com.eddy.webcrawler.databinding.FragmentBrowseBinding
 import com.eddy.webcrawler.ui.adapter.LinkIndexPagerAdapter
 import com.eddy.webcrawler.ui.viewmodel.BrowseViewModel
@@ -37,6 +37,7 @@ class BrowseFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupMenu()
         val linkIndexId = BrowseFragmentArgs.fromBundle(requireArguments()).linkIndexId
 
         if (linkIndexId == 0L) {
@@ -64,29 +65,72 @@ class BrowseFragment : Fragment() {
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                viewModel.pageState.collect { state ->
-                    when (state) {
-                        is PageState.Loading -> {
-                            binding.progressBar.visibility = View.VISIBLE
-                            binding.tvEmptyState.visibility = View.GONE
+                launch {
+                    viewModel.pageState.collect { state ->
+                        when (state) {
+                            is PageState.Loading -> {
+                                binding.progressBar.visibility = View.VISIBLE
+                                binding.tvEmptyState.visibility = View.GONE
+                            }
+                            is PageState.Success -> {
+                                binding.progressBar.visibility = View.GONE
+                                binding.tvEmptyState.visibility = View.GONE
+                            }
+                            is PageState.Error -> {
+                                binding.progressBar.visibility = View.GONE
+                                binding.tvEmptyState.visibility = View.VISIBLE
+                                binding.tvEmptyState.text = state.message
+                            }
+                            is PageState.Idle -> {
+                                binding.progressBar.visibility = View.GONE
+                                binding.tvEmptyState.visibility = View.GONE
+                            }
                         }
-                        is PageState.Success -> {
-                            binding.progressBar.visibility = View.GONE
-                            binding.tvEmptyState.visibility = View.GONE
-                        }
-                        is PageState.Error -> {
-                            binding.progressBar.visibility = View.GONE
-                            binding.tvEmptyState.visibility = View.VISIBLE
-                            binding.tvEmptyState.text = state.message
-                        }
-                        is PageState.Idle -> {
-                            binding.progressBar.visibility = View.GONE
-                            binding.tvEmptyState.visibility = View.GONE
-                        }
+                    }
+                }
+                launch {
+                    viewModel.isEditMode.collect {
+                        activity?.invalidateOptionsMenu()
+                    }
+                }
+                launch {
+                    viewModel.selectedIds.collect {
+                        activity?.invalidateOptionsMenu()
                     }
                 }
             }
         }
+    }
+
+    private fun setupMenu() {
+        requireActivity().addMenuProvider(object : MenuProvider {
+            override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
+                menuInflater.inflate(R.menu.menu_browse, menu)
+            }
+
+            override fun onPrepareMenu(menu: Menu) {
+                val isEditMode = viewModel.isEditMode.value
+                val hasSelection = viewModel.selectedIds.value.isNotEmpty()
+
+                menu.findItem(R.id.action_edit).isVisible = !isEditMode
+                menu.findItem(R.id.action_cancel_edit).isVisible = isEditMode
+                menu.findItem(R.id.action_delete_selected).isVisible = isEditMode && hasSelection
+            }
+
+            override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
+                return when (menuItem.itemId) {
+                    R.id.action_edit, R.id.action_cancel_edit -> {
+                        viewModel.toggleEditMode()
+                        true
+                    }
+                    R.id.action_delete_selected -> {
+                        viewModel.deleteSelectedItems()
+                        true
+                    }
+                    else -> false
+                }
+            }
+        }, viewLifecycleOwner, Lifecycle.State.RESUMED)
     }
 
     override fun onDestroyView() {

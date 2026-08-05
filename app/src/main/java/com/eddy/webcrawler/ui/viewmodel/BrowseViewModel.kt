@@ -30,7 +30,45 @@ class BrowseViewModel @Inject constructor(
     private val _pageState = MutableStateFlow<PageState>(PageState.Idle)
     val pageState: StateFlow<PageState> = _pageState.asStateFlow()
 
+    private val _isEditMode = MutableStateFlow(false)
+    val isEditMode: StateFlow<Boolean> = _isEditMode.asStateFlow()
+
+    private val _selectedIds = MutableStateFlow<Set<String>>(emptySet())
+    val selectedIds: StateFlow<Set<String>> = _selectedIds.asStateFlow()
+
     val allIndices = repository.getAllIndices()
+
+    fun toggleEditMode() {
+        _isEditMode.value = !_isEditMode.value
+        if (!_isEditMode.value) {
+            _selectedIds.value = emptySet()
+        }
+    }
+
+    fun toggleSelection(id: String) {
+        val current = _selectedIds.value.toMutableSet()
+        if (current.contains(id)) {
+            current.remove(id)
+        } else {
+            current.add(id)
+        }
+        _selectedIds.value = current
+    }
+
+    fun deleteItem(id: String) {
+        viewModelScope.launch {
+            repository.deleteEntry(id.toLong())
+        }
+    }
+
+    fun deleteSelectedItems() {
+        viewModelScope.launch {
+            val ids = _selectedIds.value.map { it.toLong() }
+            repository.deleteEntries(ids)
+            _selectedIds.value = emptySet()
+            _isEditMode.value = false
+        }
+    }
 
     fun loadContent(indexId: Long) {
         if (indexId == 0L) return

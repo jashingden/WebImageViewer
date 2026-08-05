@@ -37,4 +37,10 @@ interface LinkEntryDao {
 
     @Query("DELETE FROM linkentry WHERE linkIndexId = :indexId")
     suspend fun deleteEntriesByIndexId(indexId: Long)
+
+    @Query("DELETE FROM linkentry WHERE id = :id")
+    suspend fun deleteEntryById(id: Long)
+
+    @Query("DELETE FROM linkentry WHERE id IN (:ids)")
+    suspend fun deleteEntriesByIds(ids: List<Long>)
 }

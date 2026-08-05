@@ -16,8 +16,19 @@ import com.eddy.webcrawler.databinding.ItemZipDownloadBinding
 class ContentAdapter(
     private val onDownloadClick: (ContentItem.DownloadItem) -> Unit = {},
     private val onViewZipClick: (ContentItem.DownloadItem) -> Unit = {},
-    private val onHtmlClick: (ContentItem.HtmlItem) -> Unit = {}
+    private val onHtmlClick: (ContentItem.HtmlItem) -> Unit = {},
+    private val onDeleteClick: (ContentItem) -> Unit = {},
+    private val onToggleSelection: (String) -> Unit = {}
 ) : ListAdapter<ContentItem, RecyclerView.ViewHolder>(ContentItemDiffCallback()) {
+
+    private var isEditMode: Boolean = false
+    private var selectedIds: Set<String> = emptySet()
+
+    fun updateEditMode(isEditMode: Boolean, selectedIds: Set<String>) {
+        this.isEditMode = isEditMode
+        this.selectedIds = selectedIds
+        notifyDataSetChanged()
+    }
 
     companion object {
         const val TYPE_IMAGE = 0
@@ -83,16 +94,18 @@ class ContentAdapter(
     }
 
     override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
-        when (val item = getItem(position)) {
-            is ContentItem.ImageItem -> (holder as ImageViewHolder).bind(item)
-            is ContentItem.LinkItem -> (holder as LinkViewHolder).bind(item)
-            is ContentItem.DownloadItem -> (holder as DownloadViewHolder).bind(item, onDownloadClick, onViewZipClick)
-            is ContentItem.HtmlItem -> (holder as HtmlViewHolder).bind(item, onHtmlClick)
+        val item = getItem(position)
+        val isSelected = selectedIds.contains(item.stableId)
+        when (item) {
+            is ContentItem.ImageItem -> (holder as ImageViewHolder).bind(item, isEditMode, isSelected, onDeleteClick, onToggleSelection)
+            is ContentItem.LinkItem -> (holder as LinkViewHolder).bind(item, isEditMode, isSelected, onDeleteClick, onToggleSelection)
+            is ContentItem.DownloadItem -> (holder as DownloadViewHolder).bind(item, isEditMode, isSelected, onDownloadClick, onViewZipClick, onDeleteClick, onToggleSelection)
+            is ContentItem.HtmlItem -> (holder as HtmlViewHolder).bind(item, isEditMode, isSelected, onHtmlClick, onDeleteClick, onToggleSelection)
         }
     }
 
     class ImageViewHolder(private val binding: ItemImageBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: ContentItem.ImageItem) {
+        fun bind(item: ContentItem.ImageItem, isEditMode: Boolean, isSelected: Boolean, onDelete: (ContentItem) -> Unit, onToggle: (String) -> Unit) {
             val imageSource = if (item.localPath != null) {
                 java.io.File(item.localPath)
             } else {
@@ -103,35 +116,60 @@ class ContentAdapter(
                 placeholder(R.drawable.ic_placeholder)
                 error(R.drawable.ic_error)
             }
+            binding.checkBox.visibility = if (isEditMode) android.view.View.VISIBLE else android.view.View.GONE
+            binding.btnDelete.visibility = if (isEditMode) android.view.View.VISIBLE else android.view.View.GONE
+            binding.checkBox.isChecked = isSelected
+            binding.checkBox.setOnClickListener { onToggle(item.stableId) }
+            binding.btnDelete.setOnClickListener { onDelete(item) }
         }
     }
 
     class LinkViewHolder(private val binding: ItemLinkBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: ContentItem.LinkItem) {
+        fun bind(item: ContentItem.LinkItem, isEditMode: Boolean, isSelected: Boolean, onDelete: (ContentItem) -> Unit, onToggle: (String) -> Unit) {
             binding.tvLink.text = item.displayName
+            binding.checkBox.visibility = if (isEditMode) android.view.View.VISIBLE else android.view.View.GONE
+            binding.btnDelete.visibility = if (isEditMode) android.view.View.VISIBLE else android.view.View.GONE
+            binding.checkBox.isChecked = isSelected
+            binding.checkBox.setOnClickListener { onToggle(item.stableId) }
+            binding.btnDelete.setOnClickListener { onDelete(item) }
         }
     }
 
     class HtmlViewHolder(private val binding: ItemLinkBinding) : RecyclerView.ViewHolder(binding.root) {
-        fun bind(item: ContentItem.HtmlItem, onHtmlClick: (ContentItem.HtmlItem) -> Unit) {
+        fun bind(item: ContentItem.HtmlItem, isEditMode: Boolean, isSelected: Boolean, onHtmlClick: (ContentItem.HtmlItem) -> Unit, onDelete: (ContentItem) -> Unit, onToggle: (String) -> Unit) {
             binding.tvLink.text = item.displayName
-            binding.root.setOnClickListener { onHtmlClick(item) }
+            binding.root.setOnClickListener { if (!isEditMode) onHtmlClick(item) }
+            binding.checkBox.visibility = if (isEditMode) android.view.View.VISIBLE else android.view.View.GONE
+            binding.btnDelete.visibility = if (isEditMode) android.view.View.VISIBLE else android.view.View.GONE
+            binding.checkBox.isChecked = isSelected
+            binding.checkBox.setOnClickListener { onToggle(item.stableId) }
+            binding.btnDelete.setOnClickListener { onDelete(item) }
         }
     }
 
     class DownloadViewHolder(private val binding: ItemZipDownloadBinding) : RecyclerView.ViewHolder(binding.root) {
         fun bind(
             item: ContentItem.DownloadItem,
+            isEditMode: Boolean,
+            isSelected: Boolean,
             onDownloadClick: (ContentItem.DownloadItem) -> Unit,
-            onViewZipClick: (ContentItem.DownloadItem) -> Unit
+            onViewZipClick: (ContentItem.DownloadItem) -> Unit,
+            onDelete: (ContentItem) -> Unit,
+            onToggle: (String) -> Unit
         ) {
             binding.tvDisplayName.text = item.displayName
+
+            binding.checkBox.visibility = if (isEditMode) android.view.View.VISIBLE else android.view.View.GONE
+            binding.btnDelete.visibility = if (isEditMode) android.view.View.VISIBLE else android.view.View.GONE
+            binding.checkBox.isChecked = isSelected
+            binding.checkBox.setOnClickListener { onToggle(item.stableId) }
+            binding.btnDelete.setOnClickListener { onDelete(item) }
 
             when (item.downloadStatus) {
                 DownloadStatus.NOT_DOWNLOADED -> {
                     binding.tvStatus.text = "尚未下載"
                     binding.btnAction.text = "下載 ZIP"
-                    binding.btnAction.isEnabled = true
+                    binding.btnAction.isEnabled = !isEditMode
                     binding.progressBar.visibility = android.view.View.GONE
                     binding.btnAction.setOnClickListener { onDownloadClick(item) }
                 }
@@ -150,14 +188,14 @@ class ContentAdapter(
                 DownloadStatus.EXTRACTED -> {
                     binding.tvStatus.text = "已解壓縮"
                     binding.btnAction.text = "檢視 ZIP"
-                    binding.btnAction.isEnabled = true
+                    binding.btnAction.isEnabled = !isEditMode
                     binding.progressBar.visibility = android.view.View.GONE
                     binding.btnAction.setOnClickListener { onViewZipClick(item) }
                 }
                 DownloadStatus.FAILED -> {
                     binding.tvStatus.text = "下載失敗"
                     binding.btnAction.text = "重試"
-                    binding.btnAction.isEnabled = true
+                    binding.btnAction.isEnabled = !isEditMode
                     binding.progressBar.visibility = android.view.View.GONE
                     binding.btnAction.setOnClickListener { onDownloadClick(item) }
                 }
