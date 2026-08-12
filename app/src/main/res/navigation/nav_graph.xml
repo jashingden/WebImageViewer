@@ -49,6 +49,9 @@
             app:argType="string"
             android:defaultValue="@null"
             app:nullable="true" />
+        <action
+            android:id="@+id/action_zipViewerFragment_to_browseFragment"
+            app:destination="@id/browseFragment" />
     </fragment>
 
     <fragment

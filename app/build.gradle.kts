@@ -59,6 +59,10 @@ dependencies {
     implementation(libs.logging.interceptor) // 確保版本與 okhttp 一致
     implementation(libs.jsoup)
 
+    // Archive handling (zip, 7z, tar.gz)
+    implementation("org.apache.commons:commons-compress:1.26.2")
+    implementation("org.tukaani:xz:1.9")
+
     // Image Loading
     implementation("io.coil-kt:coil:2.7.0")
 
