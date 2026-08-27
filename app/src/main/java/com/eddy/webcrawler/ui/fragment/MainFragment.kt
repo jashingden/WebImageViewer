@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.Toast
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Lifecycle
@@ -20,9 +21,11 @@ import com.eddy.webcrawler.R
 import com.eddy.webcrawler.data.repository.CrawlResult
 import com.eddy.webcrawler.data.repository.SettingsRepository
 import com.eddy.webcrawler.databinding.FragmentMainBinding
+import com.eddy.webcrawler.ui.adapter.GeneralLinkAdapter
 import com.eddy.webcrawler.ui.viewmodel.CrawlState
 import com.eddy.webcrawler.ui.viewmodel.MainViewModel
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.tabs.TabLayout
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -38,6 +41,9 @@ class MainFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val viewModel: MainViewModel by viewModels()
+    private lateinit var generalLinkAdapter: GeneralLinkAdapter
+    private var isSyncingUrl = false
+    private var isUpdatingSelectAll = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -51,9 +57,19 @@ class MainFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
+        setupAdapter()
         checkAppLock()
+        setupTabs()
+        setupUrlSync()
         setupObservers()
         setupClickListeners()
+    }
+
+    private fun setupAdapter() {
+        generalLinkAdapter = GeneralLinkAdapter { position, isChecked ->
+            viewModel.toggleLink(position, isChecked)
+        }
+        binding.rvGeneralLinks.adapter = generalLinkAdapter
     }
 
     private fun checkAppLock() {
@@ -117,6 +133,48 @@ class MainFragment : Fragment() {
             .show()
     }
 
+    private fun setupTabs() {
+        binding.tabLayout.addOnTabSelectedListener(object : TabLayout.OnTabSelectedListener {
+            override fun onTabSelected(tab: TabLayout.Tab?) {
+                when (tab?.position) {
+                    0 -> {
+                        binding.layoutGeneral.visibility = View.VISIBLE
+                        binding.layoutAdvanced.visibility = View.GONE
+                    }
+                    1 -> {
+                        binding.layoutGeneral.visibility = View.GONE
+                        binding.layoutAdvanced.visibility = View.VISIBLE
+                    }
+                }
+            }
+
+            override fun onTabUnselected(tab: TabLayout.Tab?) {}
+            override fun onTabReselected(tab: TabLayout.Tab?) {}
+        })
+    }
+
+    private fun setupUrlSync() {
+        binding.etGeneralUrl.doAfterTextChanged { text ->
+            if (!isSyncingUrl) {
+                isSyncingUrl = true
+                if (binding.etAdvancedUrl.text.toString() != text.toString()) {
+                    binding.etAdvancedUrl.setText(text)
+                }
+                isSyncingUrl = false
+            }
+        }
+
+        binding.etAdvancedUrl.doAfterTextChanged { text ->
+            if (!isSyncingUrl) {
+                isSyncingUrl = true
+                if (binding.etGeneralUrl.text.toString() != text.toString()) {
+                    binding.etGeneralUrl.setText(text)
+                }
+                isSyncingUrl = false
+            }
+        }
+    }
+
     private fun setupObservers() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
@@ -132,9 +190,33 @@ class MainFragment : Fragment() {
                 }
 
                 launch {
+                    viewModel.homeLinks.collect { links ->
+                        generalLinkAdapter.submitList(links)
+                        if (links.isNotEmpty()) {
+                            binding.layoutLinkList.visibility = View.VISIBLE
+                            val allChecked = links.all { it.isChecked }
+                            isUpdatingSelectAll = true
+                            binding.cbSelectAll.isChecked = allChecked
+                            isUpdatingSelectAll = false
+
+                            val selectedCount = links.count { it.isChecked }
+                            binding.tvSelectedCount.text = "已選擇 $selectedCount / ${links.size} 個"
+                            binding.btnGeneralCrawl.isEnabled = selectedCount > 0
+                        } else {
+                            binding.layoutLinkList.visibility = View.GONE
+                        }
+                    }
+                }
+
+                launch {
                     viewModel.lastUrl.collect { url ->
-                        if (binding.etUrl.text.isNullOrBlank() && url.isNotBlank()) {
-                            binding.etUrl.setText(url)
+                        if (url.isNotBlank()) {
+                            if (binding.etGeneralUrl.text.isNullOrBlank()) {
+                                binding.etGeneralUrl.setText(url)
+                            }
+                            if (binding.etAdvancedUrl.text.isNullOrBlank()) {
+                                binding.etAdvancedUrl.setText(url)
+                            }
                         }
                     }
                 }
@@ -159,38 +241,69 @@ class MainFragment : Fragment() {
     }
 
     private fun setupClickListeners() {
-        binding.btnCrawl.setOnClickListener {
-            val url = binding.etUrl.text?.toString()?.trim() ?: ""
+        binding.cbSelectAll.setOnCheckedChangeListener { _, isChecked ->
+            if (!isUpdatingSelectAll) {
+                viewModel.toggleAllLinks(isChecked)
+            }
+        }
+
+        binding.btnFetchLinks.setOnClickListener {
+            val url = binding.etGeneralUrl.text?.toString()?.trim() ?: ""
+            viewModel.fetchHomeLinks(url)
+        }
+
+        binding.btnGeneralCrawl.setOnClickListener {
+            val url = binding.etGeneralUrl.text?.toString()?.trim() ?: ""
+            viewModel.crawlSelectedGeneralLinks(url)
+        }
+
+        binding.btnAdvancedCrawl.setOnClickListener {
+            val url = binding.etAdvancedUrl.text?.toString()?.trim() ?: ""
             val pattern = binding.etPattern.text?.toString()?.trim() ?: ""
             val rule = binding.etRule.text?.toString()?.trim() ?: ""
-            viewModel.crawl(url, pattern, rule)
+            viewModel.crawlAdvanced(url, pattern, rule)
         }
 
         binding.btnRetry.setOnClickListener {
-            val url = binding.etUrl.text?.toString()?.trim() ?: ""
-            val pattern = binding.etPattern.text?.toString()?.trim() ?: ""
-            val rule = binding.etRule.text?.toString()?.trim() ?: ""
-            viewModel.crawl(url, pattern, rule)
+            if (binding.tabLayout.selectedTabPosition == 1) {
+                val url = binding.etAdvancedUrl.text?.toString()?.trim() ?: ""
+                val pattern = binding.etPattern.text?.toString()?.trim() ?: ""
+                val rule = binding.etRule.text?.toString()?.trim() ?: ""
+                viewModel.crawlAdvanced(url, pattern, rule)
+            } else {
+                val url = binding.etGeneralUrl.text?.toString()?.trim() ?: ""
+                if (viewModel.homeLinks.value.isEmpty()) {
+                    viewModel.fetchHomeLinks(url)
+                } else {
+                    viewModel.crawlSelectedGeneralLinks(url)
+                }
+            }
         }
     }
 
     private fun showIdleState() {
         binding.progressBar.visibility = View.GONE
-        binding.btnCrawl.isEnabled = true
+        binding.btnFetchLinks.isEnabled = true
+        binding.btnGeneralCrawl.isEnabled = viewModel.homeLinks.value.any { it.isChecked }
+        binding.btnAdvancedCrawl.isEnabled = true
         binding.tvError.visibility = View.GONE
         binding.btnRetry.visibility = View.GONE
     }
 
     private fun showLoadingState() {
         binding.progressBar.visibility = View.VISIBLE
-        binding.btnCrawl.isEnabled = false
+        binding.btnFetchLinks.isEnabled = false
+        binding.btnGeneralCrawl.isEnabled = false
+        binding.btnAdvancedCrawl.isEnabled = false
         binding.tvError.visibility = View.GONE
         binding.btnRetry.visibility = View.GONE
     }
 
     private fun showSuccessState(result: CrawlResult) {
         binding.progressBar.visibility = View.GONE
-        binding.btnCrawl.isEnabled = true
+        binding.btnFetchLinks.isEnabled = true
+        binding.btnGeneralCrawl.isEnabled = true
+        binding.btnAdvancedCrawl.isEnabled = true
         binding.tvError.visibility = View.GONE
         binding.btnRetry.visibility = View.GONE
 
@@ -208,7 +321,9 @@ class MainFragment : Fragment() {
 
     private fun showErrorState(message: String) {
         binding.progressBar.visibility = View.GONE
-        binding.btnCrawl.isEnabled = true
+        binding.btnFetchLinks.isEnabled = true
+        binding.btnGeneralCrawl.isEnabled = viewModel.homeLinks.value.any { it.isChecked }
+        binding.btnAdvancedCrawl.isEnabled = true
         binding.tvError.text = message
         binding.tvError.visibility = View.VISIBLE
         binding.btnRetry.visibility = View.VISIBLE

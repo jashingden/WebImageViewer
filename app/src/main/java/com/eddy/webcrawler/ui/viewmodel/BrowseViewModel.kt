@@ -11,7 +11,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.emitAll
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -70,29 +73,33 @@ class BrowseViewModel @Inject constructor(
         }
     }
 
-    fun loadContent(indexId: Long) {
-        if (indexId == 0L) return
-        viewModelScope.launch {
-            _pageState.value = PageState.Loading
-            
-            val indexInfo = repository.getIndexById(indexId)
-            val title = indexInfo?.title ?: "未知頁面"
+    fun getContentFlow(indexId: Long): Flow<PageState> = flow {
+        if (indexId == 0L) {
+            emit(PageState.Idle)
+            return@flow
+        }
+        emit(PageState.Loading)
 
+        val indexInfo = repository.getIndexById(indexId)
+        val title = indexInfo?.title ?: "未知頁面"
+
+        emitAll(
             repository.getEntriesAsContentItems(indexId)
-                .catch { error ->
-                    _pageState.value = PageState.Error(error.message ?: "載入失敗")
-                }
-                .collectLatest { items ->
-                    _pageState.value = PageState.Success(title, items)
-                    
+                .map { items ->
                     // Trigger image downloads for missing localPaths
                     items.forEach { item ->
                         if (item is ContentItem.ImageItem && item.localPath == null) {
-                            repository.downloadImage(indexId, item.stableId.toLong(), item.url)
+                            viewModelScope.launch {
+                                repository.downloadImage(indexId, item.stableId.toLong(), item.url)
+                            }
                         }
                     }
+                    PageState.Success(title, items) as PageState
                 }
-        }
+                .catch { error ->
+                    emit(PageState.Error(error.message ?: "載入失敗"))
+                }
+        )
     }
 
     fun startDownload(entryId: Long, indexId: Long, url: String) {

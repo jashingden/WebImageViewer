@@ -3,6 +3,7 @@ package com.eddy.webcrawler.data.repository
 import android.content.Context
 import android.net.Uri
 import android.provider.OpenableColumns
+import com.eddy.webcrawler.data.crawler.CrawlEntryData
 import com.eddy.webcrawler.data.crawler.WebCrawler
 import com.eddy.webcrawler.data.db.LinkEntryDao
 import com.eddy.webcrawler.data.db.LinkIndexDao
@@ -71,6 +72,66 @@ class CrawlerRepository @Inject constructor(
         } catch (e: Exception) {
             null
         }
+    }
+
+    suspend fun fetchHomeLinks(url: String): Result<List<CrawlEntryData>> = runCatching {
+        val crawlData = webCrawler.fetchAndParse(url, ".*")
+        crawlData.aEntries.filter { it.type != "IMAGE" }
+    }
+
+    suspend fun crawlSelectedLinks(urls: List<String>, pattern: String = "", rule: String = ""): Result<CrawlResult> = runCatching {
+        var lastLinkIndexId: Long = 0
+        var totalEntries = 0
+
+        urls.forEach { subUrl ->
+            runCatching {
+                val subData = webCrawler.fetchAndParse(subUrl, if (rule.isNotBlank()) rule else pattern)
+                val allEntries = subData.aEntries + subData.imgEntries
+
+                val linkIndex = LinkIndex(
+                    sourceUrl = subUrl,
+                    filterPattern = if (rule.isNotBlank()) rule else pattern,
+                    title = subData.title,
+                    crawlTimestamp = System.currentTimeMillis(),
+                    status = if (allEntries.isEmpty()) "EMPTY" else "SUCCESS"
+                )
+
+                var linkIndexId = linkIndexDao.insertIndex(linkIndex)
+                if (linkIndexId == -1L) {
+                    linkIndexId = linkIndexDao.getIndexByUrl(subUrl)?.id ?: 0L
+                }
+                lastLinkIndexId = linkIndexId
+
+                val subA = subData.aEntries.map { subEntry ->
+                    LinkEntry(
+                        linkIndexId = linkIndexId,
+                        displayName = subEntry.displayName,
+                        url = subEntry.url,
+                        type = subEntry.type,
+                        fileExtension = subEntry.fileExtension
+                    )
+                }
+                val subImg = subData.imgEntries.map { subEntry ->
+                    LinkEntry(
+                        linkIndexId = linkIndexId,
+                        displayName = subEntry.displayName,
+                        url = subEntry.url,
+                        type = subEntry.type,
+                        fileExtension = subEntry.fileExtension
+                    )
+                }
+
+                if (subA.isNotEmpty() || subImg.isNotEmpty()) {
+                    linkEntryDao.insertEntries(subA + subImg)
+                    totalEntries += subA.size + subImg.size
+                }
+            }
+        }
+
+        CrawlResult(
+            linkIndexId = lastLinkIndexId,
+            totalEntries = totalEntries
+        )
     }
 
     suspend fun crawl(url: String, pattern: String, rule: String): Result<CrawlResult> = runCatching {

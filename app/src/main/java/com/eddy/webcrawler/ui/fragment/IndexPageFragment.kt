@@ -82,13 +82,31 @@ class IndexPageFragment : Fragment() {
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                 launch {
-                    viewModel.pageState.collect { state ->
+                    viewModel.getContentFlow(indexId).collect { state ->
                         when (state) {
+                            is com.eddy.webcrawler.ui.viewmodel.PageState.Loading -> {
+                                binding.progressBar.visibility = View.VISIBLE
+                                binding.tvMessage.visibility = View.GONE
+                                binding.recyclerView.visibility = View.GONE
+                            }
                             is com.eddy.webcrawler.ui.viewmodel.PageState.Success -> {
+                                binding.progressBar.visibility = View.GONE
+                                binding.tvMessage.visibility = View.GONE
+                                binding.recyclerView.visibility = View.VISIBLE
                                 binding.tvPageTitle.text = state.title
                                 adapter.submitList(state.content)
                             }
-                            else -> {}
+                            is com.eddy.webcrawler.ui.viewmodel.PageState.Error -> {
+                                binding.progressBar.visibility = View.GONE
+                                binding.recyclerView.visibility = View.GONE
+                                binding.tvMessage.visibility = View.VISIBLE
+                                binding.tvMessage.text = state.message
+                            }
+                            is com.eddy.webcrawler.ui.viewmodel.PageState.Idle -> {
+                                binding.progressBar.visibility = View.GONE
+                                binding.recyclerView.visibility = View.GONE
+                                binding.tvMessage.visibility = View.GONE
+                            }
                         }
                     }
                 }
@@ -104,8 +122,6 @@ class IndexPageFragment : Fragment() {
                 }
             }
         }
-
-        viewModel.loadContent(indexId)
     }
 
     override fun onDestroyView() {

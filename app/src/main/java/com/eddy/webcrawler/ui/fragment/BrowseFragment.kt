@@ -12,7 +12,6 @@ import com.eddy.webcrawler.R
 import com.eddy.webcrawler.databinding.FragmentBrowseBinding
 import com.eddy.webcrawler.ui.adapter.LinkIndexPagerAdapter
 import com.eddy.webcrawler.ui.viewmodel.BrowseViewModel
-import com.eddy.webcrawler.ui.viewmodel.PageState
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.launch
 
@@ -40,15 +39,19 @@ class BrowseFragment : Fragment() {
         setupMenu()
         val linkIndexId = BrowseFragmentArgs.fromBundle(requireArguments()).linkIndexId
 
+        adapter = LinkIndexPagerAdapter(this)
+        binding.viewPager.adapter = adapter
+        binding.viewPager.offscreenPageLimit = 1
+
         if (linkIndexId == 0L) {
             viewLifecycleOwner.lifecycleScope.launch {
                 viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
                     viewModel.allIndices.collect { indices ->
                         if (indices.isNotEmpty()) {
-                            adapter = LinkIndexPagerAdapter(this@BrowseFragment, indices.map { it.id })
-                            binding.viewPager.adapter = adapter
+                            adapter.updateIndices(indices.map { it.id })
                             binding.tvEmptyState.visibility = View.GONE
                         } else {
+                            adapter.updateIndices(emptyList())
                             binding.tvEmptyState.visibility = View.VISIBLE
                             binding.tvEmptyState.text = "尚未有爬取紀錄"
                         }
@@ -56,38 +59,11 @@ class BrowseFragment : Fragment() {
                 }
             }
         } else {
-            adapter = LinkIndexPagerAdapter(this, listOf(linkIndexId))
-            binding.viewPager.adapter = adapter
-            viewModel.loadContent(linkIndexId)
+            adapter.updateIndices(listOf(linkIndexId))
         }
-
-        binding.viewPager.offscreenPageLimit = 1
 
         viewLifecycleOwner.lifecycleScope.launch {
             viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
-                launch {
-                    viewModel.pageState.collect { state ->
-                        when (state) {
-                            is PageState.Loading -> {
-                                binding.progressBar.visibility = View.VISIBLE
-                                binding.tvEmptyState.visibility = View.GONE
-                            }
-                            is PageState.Success -> {
-                                binding.progressBar.visibility = View.GONE
-                                binding.tvEmptyState.visibility = View.GONE
-                            }
-                            is PageState.Error -> {
-                                binding.progressBar.visibility = View.GONE
-                                binding.tvEmptyState.visibility = View.VISIBLE
-                                binding.tvEmptyState.text = state.message
-                            }
-                            is PageState.Idle -> {
-                                binding.progressBar.visibility = View.GONE
-                                binding.tvEmptyState.visibility = View.GONE
-                            }
-                        }
-                    }
-                }
                 launch {
                     viewModel.isEditMode.collect {
                         activity?.invalidateOptionsMenu()

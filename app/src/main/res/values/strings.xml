@@ -1,7 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">WebImageViewer</string>
+    <string name="tab_general">一般</string>
+    <string name="tab_advanced">進階</string>
     <string name="crawl">開始爬取</string>
+    <string name="fetch_links">讀取網頁連結</string>
+    <string name="execute_crawl">執行爬取</string>
+    <string name="select_all">全選</string>
+    <string name="no_links_selected">請至少選擇一個連結</string>
+    <string name="no_links_found_on_page">該網頁找不到任何連結</string>
     <string name="enter_url">輸入網址</string>
     <string name="filter_pattern">過濾規則</string>
     <string name="loading">載入中…</string>
