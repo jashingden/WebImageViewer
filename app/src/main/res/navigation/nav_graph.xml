@@ -27,6 +27,23 @@
         <action
             android:id="@+id/action_browseFragment_to_zipViewerFragment"
             app:destination="@id/zipViewerFragment" />
+        <action
+            android:id="@+id/action_browseFragment_to_fullScreenViewerFragment"
+            app:destination="@id/fullScreenViewerFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/fullScreenViewerFragment"
+        android:name="com.eddy.webcrawler.ui.fragment.FullScreenViewerFragment"
+        android:label="全螢幕觀看"
+        tools:layout="@layout/fragment_full_screen_viewer">
+        <argument
+            android:name="linkIndexId"
+            app:argType="long" />
+        <argument
+            android:name="startPosition"
+            app:argType="integer"
+            android:defaultValue="0" />
     </fragment>
 
     <fragment

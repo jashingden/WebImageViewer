@@ -88,6 +88,7 @@ class BrowseFragment : Fragment() {
                 val isEditMode = viewModel.isEditMode.value
                 val hasSelection = viewModel.selectedIds.value.isNotEmpty()
 
+                menu.findItem(R.id.action_full_screen).isVisible = !isEditMode
                 menu.findItem(R.id.action_edit).isVisible = !isEditMode
                 menu.findItem(R.id.action_cancel_edit).isVisible = isEditMode
                 menu.findItem(R.id.action_delete_selected).isVisible = isEditMode && hasSelection
@@ -95,6 +96,17 @@ class BrowseFragment : Fragment() {
 
             override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
                 return when (menuItem.itemId) {
+                    R.id.action_full_screen -> {
+                        val indexId = adapter.getItemId(binding.viewPager.currentItem)
+                        if (indexId != 0L) {
+                            val action = BrowseFragmentDirections.actionBrowseFragmentToFullScreenViewerFragment(
+                                linkIndexId = indexId,
+                                startPosition = 0
+                            )
+                            androidx.navigation.fragment.NavHostFragment.findNavController(this@BrowseFragment).navigate(action)
+                        }
+                        true
+                    }
                     R.id.action_edit, R.id.action_cancel_edit -> {
                         viewModel.toggleEditMode()
                         true

@@ -2,6 +2,11 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/action_full_screen"
+        android:icon="@android:drawable/ic_menu_view"
+        android:title="全螢幕"
+        app:showAsAction="ifRoom" />
+    <item
         android:id="@+id/action_edit"
         android:icon="@android:drawable/ic_menu_edit"
         android:title="@string/action_edit"
